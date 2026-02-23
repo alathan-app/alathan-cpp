@@ -540,6 +540,51 @@
 
     // Put your real filenames here.
     // Example: prayer_grid_light.jpg / prayer_grid_dark.jpg
+    <script>
+  // =========================
+  // 1) ASSETS (LIGHT/DARK)
+  // =========================
+  const ASSETS = {
+    prayerGrid: {
+      light: "https://alathan-app.github.io/alathan-cpp/prayer_grid_light.jpg",
+      dark:  "https://alathan-app.github.io/alathan-cpp/prayer_grid_dark.jpg"
+    },
+    lockscreenIqama: {
+      light: "https://alathan-app.github.io/alathan-cpp/lockscreen_iqama_light.png",
+      dark:  "https://alathan-app.github.io/alathan-cpp/lockscreen_iqama_dark.png"
+    },
+    widgetsStack: {
+      light: "https://alathan-app.github.io/alathan-cpp/widgets_stack_light.png",
+      dark:  "https://alathan-app.github.io/alathan-cpp/widgets_stack_dark.png"
+    },
+    widgetsOverview: {
+      light: "https://alathan-app.github.io/alathan-cpp/widgets_overview_light.png",
+      dark:  "https://alathan-app.github.io/alathan-cpp/widgets_overview_dark.png"
+    },
+    quranRadio: {
+      light: "https://alathan-app.github.io/alathan-cpp/quran_radio_light.png",
+      dark:  "https://alathan-app.github.io/alathan-cpp/quran_radio_dark.png"
+    }
+  };
+
+  // Detect current theme (auto switches when user changes device theme)
+  const mqDark = window.matchMedia("(prefers-color-scheme: dark)");
+  const theme = () => (mqDark.matches ? "dark" : "light");
+
+  function asset(key){
+    return ASSETS[key][theme()];
+  }
+
+  function preloadAll(){
+    Object.keys(ASSETS).forEach(key => {
+      ["light","dark"].forEach(mode => {
+        const img = new Image();
+        img.src = ASSETS[key][mode];
+      });
+    });
+  }
+  preloadAll();
+</script>
     const ASSETS = {
       prayerGrid: {
         light: BASE + "prayer_grid_light.jpg",
