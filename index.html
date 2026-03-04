@@ -721,30 +721,38 @@
       applySupportLang();
       CHAPTERS.forEach(ch => activateBullet(ch.key, 0));
     }
-    function setMode(mode){
-      MODE = mode;
-      const supportBtn = document.getElementById("mode-support");
-      const policyBtn = document.getElementById("mode-policy");
-      if(supportBtn && policyBtn){
-        supportBtn.classList.toggle("active", mode === "support");
-        policyBtn.classList.toggle("active", mode === "policy");
-      }
-      const isAr = LANG === "ar";
-      let targetId;
-      let hash;
-      if(mode === "policy"){
-        targetId = isAr ? "privacy-ar-heading" : "privacy-en-heading";
-        hash = isAr ? "#privacy-ar" : "#privacy-en";
-      }else{
-        targetId = isAr ? "howto-ar-heading" : "howto-en-heading";
-        hash = isAr ? "#support-ar" : "#support-en";
-      }
-      const el = document.getElementById(targetId);
-      if(el) el.scrollIntoView({ behavior:"smooth", block:"start" });
-      if(hash){
-        history.replaceState(null, "", hash);
-      }
-    }
+  function setMode(mode){
+  MODE = mode;
+
+  const supportBtn = document.getElementById("mode-support");
+  const policyBtn  = document.getElementById("mode-policy");
+  if (supportBtn && policyBtn){
+    supportBtn.classList.toggle("active", mode === "support");
+    policyBtn.classList.toggle("active", mode === "policy");
+  }
+
+  const isAr = LANG === "ar";
+  let targetId, hash;
+
+  if (mode === "policy"){
+    targetId = isAr ? "privacy-ar-heading" : "privacy-en-heading";
+    hash     = isAr ? "#privacy-ar"        : "#privacy-en";
+  } else {
+    targetId = isAr ? "howto-ar-heading"   : "howto-en-heading";
+    hash     = isAr ? "#support-ar"        : "#support-en";
+  }
+
+  // Smooth scroll
+  const el = document.getElementById(targetId);
+  if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
+
+  // ✅ Preserve existing URL + query params, only update hash
+  if (hash){
+    const url = new URL(window.location.href);
+    url.hash = hash; // keeps ?query=... intact
+    history.replaceState(null, "", url.toString());
+  }
+}
     document.getElementById("btn-en").addEventListener("click", ()=>setLang("en"));
     document.getElementById("btn-ar").addEventListener("click", ()=>setLang("ar"));
     document.getElementById("theme-system").addEventListener("click", ()=>setThemeMode("system"));
