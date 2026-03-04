@@ -4,11 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AlAthan</title>
-  <meta name="description" content="Apple-style scrolling story page for AlAthan with sticky screenshots that swap as you scroll." />
-
+  <meta name="description" content="Apple-style scrolling story page for AlAthan with sticky iPhone mock and screenshot transitions." />
   <style>
     :root{
-      --bg:#fbfbfd;
+      --bg:#f5f5f7;
       --surface: rgba(255,255,255,.72);
       --surface-2: rgba(255,255,255,.56);
       --text:#1d1d1f;
@@ -19,19 +18,15 @@
       --radius-lg:28px;
       --accent:#0071e3;
       --accent-2:#0a84ff;
-      --ui:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+      --ui:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
       --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-
       --max:1200px;
       --navH:64px;
-
-      --chapterMinH:100vh;
-
-      /* desktop mock size */
+      --chapterPadY: 96px;
+      --chapterMinH: 110vh;
       --phoneW:min(380px, 36vw);
       --phoneH:calc(var(--phoneW) * 2.08);
     }
-
     @media (prefers-color-scheme: dark){
       :root{
         --bg:#000;
@@ -45,460 +40,183 @@
         --accent-2:#409cff;
       }
     }
-
+    :root[data-theme="light"]{
+      --bg:#f5f5f7;
+      --surface: rgba(255,255,255,.72);
+      --surface-2: rgba(255,255,255,.56);
+      --text:#1d1d1f;
+      --muted:#6e6e73;
+      --border: rgba(0,0,0,.10);
+      --shadow-soft: 0 10px 30px rgba(0,0,0,.08);
+      --accent:#0071e3;
+      --accent-2:#0a84ff;
+    }
+    :root[data-theme="dark"]{
+      --bg:#000;
+      --surface: rgba(28,28,30,.78);
+      --surface-2: rgba(28,28,30,.56);
+      --text:#f5f5f7;
+      --muted:#a1a1a6;
+      --border: rgba(255,255,255,.14);
+      --shadow-soft: 0 12px 34px rgba(0,0,0,.45);
+      --accent:#0a84ff;
+      --accent-2:#409cff;
+    }
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family: var(--ui);
-      color: var(--text);
-      background: var(--bg);
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      line-height: 1.45;
-      overflow-x:hidden;
-    }
+    body{ margin:0; padding-top: var(--navH); font-family: var(--ui); color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; line-height: 1.45; overflow-x:hidden; }
     a{ color: var(--accent); text-decoration:none; }
     a:hover{ text-decoration:underline; }
+    .container{ width:min(var(--max), 100%); margin:0 auto; padding:0 32px; box-sizing: border-box; }
 
-    .container{ width:min(var(--max), calc(100% - 40px)); margin:0 auto; }
-
-    /* Sticky nav */
-    .nav{
-      position:sticky; top:0; z-index:60;
-      height:var(--navH);
-      display:flex; align-items:center;
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      background: color-mix(in oklab, var(--bg) 82%, transparent);
-      border-bottom: 1px solid var(--border);
-    }
-    @supports not (color-mix(in oklab, red, blue)) {
-      .nav { background: rgba(251,251,253,.82); }
-      @media (prefers-color-scheme: dark){ .nav { background: rgba(0,0,0,.72); } }
-    }
-    .nav-inner{
-      display:flex; align-items:center; justify-content:space-between; gap:14px;
-      width:100%;
-    }
+    .nav{ position:fixed; inset-block-start:0; inset-inline:0; z-index:60; height:var(--navH); display:flex; align-items:center; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); background: color-mix(in oklab, var(--bg) 82%, transparent); border-bottom: 1px solid var(--border); }
+    @supports not (color-mix(in oklab, red, blue)) { .nav { background: rgba(251,251,253,.82); } @media (prefers-color-scheme: dark){ .nav { background: rgba(0,0,0,.72); } } }
+    .nav-inner{ display:flex; align-items:center; justify-content:space-between; gap:14px; width:100%; }
     .brand{ display:flex; align-items:center; gap:12px; min-width:220px; }
-    .logo{
-      width:34px; height:34px; border-radius:12px;
-      background:
-        radial-gradient(18px 18px at 28% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 65%),
-        linear-gradient(135deg, rgba(10,132,255,.92), rgba(0,113,227,.92));
-      box-shadow: 0 12px 26px rgba(0,0,0,.14);
-      border: 1px solid rgba(255,255,255,.16);
-      flex:0 0 auto;
-    }
+    .nav-app-icon{ display:inline-block; width:34px; height:34px; flex-shrink:0; border-radius:8px; overflow:hidden; }
+    .nav-app-icon a{ display:block; width:100%; height:100%; }
+    .nav-app-icon img{ width:100%; height:100%; object-fit: contain; }
+    .store-row .app-icon-wrap{ flex-shrink: 0; width: 78px; height: 78px; min-width: 78px; display: inline-flex; align-items: center; justify-content: center; border-radius: 18px; overflow: hidden; }
+.store-row .app-icon-wrap a{ display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; }
+.store-row .app-icon-wrap img{ width: 100%; height: 100%; object-fit: contain; display: block; }
     .brand h1{ margin:0; font-size:13.5px; font-weight:650; line-height:1.1; letter-spacing:.2px; }
     .brand p{ margin:2px 0 0; font-size:12px; color:var(--muted); }
-
     .nav-actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
-
-    .seg{
-      display:flex; border:1px solid var(--border); border-radius:999px;
-      overflow:hidden; background: var(--surface-2);
-    }
-    .seg button{
-      border:0; background:transparent; padding:9px 12px;
-      font-size:13px; color:var(--muted); cursor:pointer;
-      transition: background .2s ease, color .2s ease;
-    }
+    .seg{ display:flex; border:1px solid var(--border); border-radius:999px; overflow:hidden; background: var(--surface-2); }
+    .seg button{ border:0; background:transparent; padding:9px 12px; font-size:13px; color:var(--muted); cursor:pointer; transition: background .2s ease, color .2s ease; }
     .seg button.active{ background: rgba(0,113,227,.14); color: var(--text); }
-
-    .btn{
-      border:1px solid var(--border);
-      background: var(--surface-2);
-      color: var(--text);
-      padding:9px 12px;
-      border-radius:999px;
-      font-size:13px;
-      display:inline-flex; align-items:center; gap:8px;
-      cursor:pointer; user-select:none;
-      transition: transform .15s ease, background .2s ease, border-color .2s ease;
-      white-space:nowrap;
-    }
+    .btn{ border:1px solid var(--border); background: var(--surface-2); color: var(--text); padding:9px 12px; border-radius:999px; font-size:13px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none; transition: transform .15s ease, background .2s ease, border-color .2s ease; white-space:nowrap; }
     .btn:hover{ transform: translateY(-1px); }
-    .btn.primary{
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color:#fff;
-      border-color: rgba(255,255,255,.18);
-      box-shadow: 0 14px 28px rgba(0,113,227,.22);
-    }
+    .btn.primary{ background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; border-color: rgba(255,255,255,.18); box-shadow: 0 14px 28px rgba(0,113,227,.22); }
 
-    /* HERO */
-    .hero{
-      position:relative;
-      height: clamp(640px, 92vh, 980px);
-      overflow:hidden;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg);
-    }
-    .hero-media{
-      position:absolute; inset:0;
-      transform: translateY(var(--pY, 0px)) scale(1.08);
-      will-change: transform;
-      transition: transform .06s linear;
-    }
-    .hero-media::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background:
-        radial-gradient(1000px 700px at 20% 20%, rgba(0,113,227,.22), transparent 60%),
-        radial-gradient(900px 640px at 82% 22%, rgba(64,156,255,.18), transparent 55%),
-        radial-gradient(1100px 700px at 55% 88%, rgba(0,113,227,.12), transparent 62%);
-      pointer-events:none;
-      z-index: 2;
-    }
-    .hero-img{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      object-fit: cover;
-      object-position: 50% 35%;
-      opacity: .34;
-      z-index: 1;
-      transform: translateZ(0);
-      filter: saturate(1.04) contrast(1.02);
-    }
-    @media (prefers-color-scheme: dark){
-      .hero-img{ opacity: .20; }
-      .hero-media::before{ mix-blend-mode: screen; }
-    }
-    .hero-overlay{
-      position:absolute; inset:0;
-      background: radial-gradient(1200px 700px at 50% 30%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%);
-      pointer-events:none;
-      z-index: 3;
-    }
-    @media (prefers-color-scheme: dark){
-      .hero-overlay{
-        background: radial-gradient(1200px 700px at 50% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%);
-      }
-    }
-    .hero-inner{
-      position:relative; z-index: 4;
-      height:100%;
-      display:flex; align-items:center;
-    }
-    .hero-grid{
-      width:100%;
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 28px;
-      align-items:center;
-    }
-    @media (max-width: 980px){
-      .hero{ height:auto; padding: 84px 0 40px; }
-      .hero-media, .hero-overlay{ display:none; }
-      .hero-grid{ grid-template-columns:1fr; align-items:start; }
-    }
+    .hero{ position:relative; height: clamp(640px, 92vh, 980px); overflow:hidden; border-bottom: 1px solid var(--border); background: var(--bg); }
+    .hero-media{ position:absolute; inset:0; pointer-events:none; }
+    .hero-media::before{ content:none; }
+    .hero-img{ position:absolute; inset:0; width:100%; height:100%; object-fit: cover; opacity: 0; z-index: 1; }
+    .hero-overlay{ display: none; }
+    .hero-inner{ position:relative; z-index: 4; height:100%; display:flex; align-items:center; }
+    .hero-grid{ width:100%; display:grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items:center; }
+    @media (max-width: 980px){ .hero{ height:auto; padding: 84px 0 40px; } .hero-media, .hero-overlay{ display:none; } .hero-grid{ grid-template-columns:1fr; align-items:start; } }
 
-    .kicker{
-      display:inline-flex; align-items:center; gap:10px;
-      border:1px solid var(--border);
-      padding:8px 12px; border-radius:999px;
-      font-size:12.5px; color:var(--muted);
-      background: var(--surface-2);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
-    .dot{
-      width:8px;height:8px;border-radius:99px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      box-shadow: 0 0 0 4px rgba(0,113,227,.12);
-    }
-    .hero h2{
-      margin:14px 0 10px;
-      font-size: clamp(38px, 5vw, 64px);
-      letter-spacing: -0.035em;
-      line-height: 1.02;
-    }
+    .kicker{ display:inline-flex; align-items:center; gap:10px; border:1px solid var(--border); padding:8px 12px; border-radius:999px; font-size:12.5px; color:var(--muted); background: var(--surface-2); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+    .dot{ width:8px;height:8px;border-radius:99px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 0 0 4px rgba(0,113,227,.12); }
+    .hero h2{ margin:14px 0 10px; font-size: clamp(38px, 5vw, 64px); letter-spacing: -0.035em; line-height: 1.02; }
     .hero p{ margin:0 0 18px; color:var(--muted); font-size:16px; max-width:70ch; }
+    .store-row{ display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top: 14px; }
 
-    .panel{
-      border:1px solid var(--border);
-      background: var(--surface);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-soft);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      overflow:hidden;
-    }
-    .panel.pad{ padding:18px; }
+    .features-panel{ background: transparent; max-width: 420px; font-family: var(--ui); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    .features-panel .features-title{ font-family: var(--ui); font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 24px; }
+    .features-panel .features-list{ font-family: var(--ui); font-size: 17px; font-weight: 400; letter-spacing: -0.022em; line-height: 1.47; color: var(--text); margin: 0; padding: 0; list-style: none; }
+    .features-panel .features-list .line{ display: block; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border); color: var(--text); font-weight: 400; }
+    .features-panel .features-list .line:last-child{ margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .features-panel .features-list .line.break{ height: 0; margin: 0; padding: 0; border: none; overflow: hidden; }
+    .features-panel .features-list .line.tagline{ font-size: 15px; font-weight: 400; letter-spacing: -0.01em; color: var(--muted); border: none; margin-top: 8px; }
 
-    .field{
-      border:1px solid var(--border);
-      background: var(--surface-2);
-      border-radius:18px;
-      padding:14px;
-    }
-    .field label{
-      display:block;
-      font-size:11.5px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color: var(--muted);
-      margin-bottom:8px;
-    }
-    .field .val{
-      font-size:14px;
-      white-space: pre-wrap;
-    }
-
-    /* CHAPTERS */
-    .chapter{
-      min-height: var(--chapterMinH);
-      display:flex;
-      align-items:center;
-      padding: 56px 0;
-      border-bottom: 1px solid var(--border);
-      background:
-        radial-gradient(900px 520px at 18% 18%, rgba(0,113,227,.08), transparent 60%),
-        radial-gradient(820px 520px at 82% 24%, rgba(64,156,255,.08), transparent 55%),
-        var(--bg);
-    }
-    @media (prefers-color-scheme: dark){
-      .chapter{
-        background:
-          radial-gradient(900px 520px at 18% 18%, rgba(10,132,255,.06), transparent 60%),
-          radial-gradient(820px 520px at 82% 24%, rgba(64,156,255,.05), transparent 55%),
-          var(--bg);
-      }
-    }
-
-    .chapter-inner{
-      width:100%;
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 28px;
-      align-items:start;
-    }
+    .chapter{ min-height: var(--chapterMinH); display:flex; align-items:center; padding: var(--chapterPadY) 0; border-bottom: 1px solid var(--border); background: var(--bg); }
+    .chapter-inner{ width:100%; display:grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items:start; }
     @media (max-width: 980px){
-      .chapter{ min-height:auto; padding: 52px 0; }
-      .chapter-inner{ grid-template-columns: 1fr; }
+      .chapter{ min-height:auto; padding: 72px 0; }
+      .chapter-inner{ grid-template-columns: 1fr; gap: 32px; }
+      .chapter-inner > .mock-wrap{ order:1; }
+      .chapter-inner > .reveal{ order:2; }
     }
 
-    /* Sticky phone mock */
-    .mock-wrap{
-      position: sticky;
-      top: calc(var(--navH) + 18px);
-      height: calc(100vh - var(--navH) - 36px);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    @media (max-width: 980px){
-      .mock-wrap{
-        position: relative;
-        top:auto;
-        height:auto;
-        justify-content:flex-start;
-      }
-    }
+    .mock-wrap{ position: sticky; top: calc(var(--navH) + 18px); height: calc(100vh - var(--navH) - 36px); display:flex; align-items:center; justify-content:center; }
+    .phone-stage{ width: var(--phoneW); height: var(--phoneH); position: relative; transform: translateZ(0); filter: drop-shadow(0 26px 70px rgba(0,0,0,.16)); }
+    .screen-stack{ position:absolute; inset:0; border-radius: 38px; overflow:hidden; border: 1px solid var(--border); background: linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.35)); }
+    @media (prefers-color-scheme: dark){ .screen-stack{ background: linear-gradient(180deg, rgba(28,28,30,.78), rgba(28,28,30,.42)); } }
+    @media (max-width: 980px){ :root{ --phoneW: min(420px, 92vw); --phoneH: calc(var(--phoneW) * 2.04); } .screen-stack{ border-radius: 32px; } }
+    .screen{ position:absolute; inset:0; opacity:0; transform: scale(1.015) translateY(10px); transition: opacity .75s ease, transform .75s ease; will-change: opacity, transform; }
+    .screen.active{ opacity:1; transform: scale(1.0) translateY(0); }
+    .screen img{ position:absolute; inset:0; width:100%; height:100%; object-fit: cover; object-position: 50% 20%; transform: translateZ(0); }
+    .iphone-overlay{ display:none; position:absolute; inset:0; width:100%; height:100%; object-fit: contain; pointer-events:none; z-index: 10; }
+    #chapter-watch .phone-stage{ width: 280px; height: 330px; box-shadow: none; }
+    @media (max-width: 980px){ #chapter-watch .phone-stage{ width: 240px; height: 283px; } }
+    #chapter-watch .screen-stack{ border: none; background: transparent; border-radius: 0; }
+    #chapter-watch .screen img{ object-fit: contain; object-position: 50% 50%; }
 
-    .phone{
-      width: var(--phoneW);
-      height: var(--phoneH);
-      border-radius: 38px;
-      border: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.35));
-      box-shadow: 0 26px 70px rgba(0,0,0,.14);
-      position: relative;
-      overflow:hidden;
-      transform: translateZ(0);
-    }
-    @media (max-width: 980px){
-      :root{
-        --phoneW: min(420px, 92vw);
-        --phoneH: calc(var(--phoneW) * 2.04);
-      }
-      .phone{
-        border-radius: 32px;
-      }
-    }
-    @media (prefers-color-scheme: dark){
-      .phone{
-        background: linear-gradient(180deg, rgba(28,28,30,.78), rgba(28,28,30,.42));
-        box-shadow: 0 28px 80px rgba(0,0,0,.55);
-      }
-    }
-    .phone::before{
-      content:"";
-      position:absolute;
-      inset: 10px;
-      border-radius: 30px;
-      border: 1px solid rgba(255,255,255,.18);
-      pointer-events:none;
-      z-index: 5;
-    }
-    .island{
-      position:absolute;
-      top: 10px;
-      left:50%;
-      transform: translateX(-50%);
-      width: 42%;
-      height: 18px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.35);
-      opacity: .35;
-      z-index: 6;
-    }
-    @media (prefers-color-scheme: dark){
-      .island{ background: rgba(0,0,0,.62); opacity:.55; }
-    }
-
-    .mock{ position:absolute; inset:0; }
-
-    .screen{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      transform: scale(1.02) translateY(10px);
-      transition: opacity .55s ease, transform .55s ease;
-      will-change: opacity, transform;
-    }
-    .screen.active{
-      opacity:1;
-      transform: scale(1.0) translateY(0);
-    }
-
-    .screen .img{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit: cover;
-      object-position: 50% 20%;
-      transform: translateZ(0);
-    }
-
-    .screen .caption{
-      position:absolute;
-      left: 14px;
-      right: 14px;
-      bottom: 14px;
-      padding: 12px 12px;
-      border-radius: 22px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.55);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      box-shadow: var(--shadow-soft);
-      z-index: 4;
-    }
-    @media (prefers-color-scheme: dark){
-      .screen .caption{ background: rgba(28,28,30,.62); }
-    }
-    .screen .caption .t{
-      margin:0 0 4px;
-      font-weight: 750;
-      letter-spacing: -.02em;
-      font-size: 13.5px;
-    }
-    .screen .caption .s{
-      margin:0;
-      color: var(--muted);
-      font-size: 12.6px;
-      line-height: 1.25;
-    }
-
-    .chapter h3{
-      margin: 12px 0 10px;
-      font-size: clamp(26px, 3.2vw, 42px);
-      letter-spacing: -0.03em;
-      line-height: 1.06;
-    }
-    .lead{ margin:0 0 12px; color:var(--muted); font-size:15.5px; max-width:70ch; }
-
-    .badge{
-      display:inline-flex;
-      border: 1px solid var(--border);
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      color: var(--muted);
-      background: var(--surface-2);
-      white-space: nowrap;
-    }
-
-    .bullets{ margin-top:14px; display:grid; gap:10px; }
-    .bullet{
-      padding:12px 14px;
-      border-radius:18px;
-      border:1px solid var(--border);
-      background: var(--surface);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      box-shadow: var(--shadow-soft);
-      cursor:pointer;
-      transition: transform .18s ease, border-color .2s ease, background .2s ease;
-    }
+    .chapter h3{ margin: 16px 0 12px; font-size: clamp(26px, 3.2vw, 42px); letter-spacing: -0.03em; line-height: 1.06; }
+    .lead{ margin:0 0 16px; color:var(--muted); font-size:15.5px; max-width:70ch; }
+    .badge{ display:inline-flex; border: 1px solid var(--border); padding: 7px 10px; border-radius: 999px; font-size: 12px; color: var(--muted); background: var(--surface-2); white-space: nowrap; }
+    .bullets{ margin-top:24px; display:grid; gap:20px; }
+    .bullet{ padding:18px 20px; border-radius:18px; border:1px solid var(--border); background: var(--surface); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: var(--shadow-soft); cursor:pointer; transition: transform .18s ease, border-color .2s ease, background .2s ease; }
     .bullet:hover{ transform: translateY(-1px); }
-    .bullet.active{
-      border-color: rgba(0,113,227,.45);
-      background: rgba(0,113,227,.08);
-    }
-    .bullet .k{ font-family: var(--mono); font-size:12px; color:var(--muted); margin:0 0 4px; }
+    .bullet.active{ border-color: rgba(0,113,227,.45); background: rgba(0,113,227,.08); }
     .bullet .t{ margin:0 0 4px; font-weight:650; letter-spacing:-.01em; font-size:14px; }
     .bullet .h{ margin:0; color:var(--muted); font-size:13px; line-height:1.3; }
 
-    /* reveal */
-    .reveal{
-      opacity:0;
-      transform: translateY(16px);
-      transition: opacity .7s ease, transform .7s ease;
-      will-change: opacity, transform;
-    }
+    .reveal{ opacity:0; transform: translateY(16px); transition: opacity .7s ease, transform .7s ease; will-change: opacity, transform; }
     .reveal.in{ opacity:1; transform: translateY(0); }
-
-    /* RTL */
     .rtl{ direction:rtl; text-align:right; }
     .rtl .nav-inner{ direction:rtl; }
     .rtl .brand{ flex-direction: row-reverse; }
     .rtl .nav-actions{ justify-content:flex-start; }
-    .rtl .field label{ letter-spacing:0; text-transform:none; font-weight:650; font-size:12px; }
-
+    .rtl .features-panel .features-title{ letter-spacing: 0.04em; }
+    .support-root{ padding: 80px 0 96px; border-top: 1px solid var(--border); background: var(--bg); }
+    .support-grid{ max-width: 820px; margin: 0 auto; display:flex; flex-direction:column; gap:32px; font-family: var(--ui); }
+    .support-header h2{ margin:0 0 6px; font-size: 28px; letter-spacing:-0.03em; }
+    .support-header p{ margin:0; color:var(--muted); font-size:15px; max-width: 48rem; letter-spacing:-0.022em; }
+    .support-contact{ margin-top:18px; display:flex; flex-direction:column; gap:6px; }
+    .support-label{ font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); }
+    .support-contact a{ font-size:15px; }
+    .support-contact .btn.primary{ padding:7px 18px; font-size:14px; box-shadow:none; border-radius:999px; }
+    .support-card{ margin-top:16px; padding:28px 24px 26px; border-radius: 22px; border:1px solid var(--border); background:color-mix(in oklab, var(--surface) 90%, transparent); box-shadow: var(--shadow-soft); }
+    .support-card h2{ margin:0 0 10px; font-size:22px; letter-spacing:-0.02em; font-weight:600; }
+    .support-card > p{ margin:0 0 10px; color:var(--muted); font-size:15px; letter-spacing:-0.022em; }
+    .support-card .policy-block{ margin-top:20px; padding-top:14px; border-top:1px solid color-mix(in oklab, var(--border) 70%, transparent); }
+    .support-card .policy-block h3{ margin:0 0 6px; font-size:13px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); }
+    .support-card .policy-block p{ margin:0 0 10px; font-size:15px; line-height:1.5; letter-spacing:-0.022em; color:var(--text); }
+    .support-card .policy-block p:last-child{ margin-bottom:0; }
+    .howto-list{ margin:8px 0 0; padding:0; list-style:none; font-size:15px; line-height:1.5; letter-spacing:-0.022em; }
+    .howto-group-spacer{ height:12px; }
+    .howto-label{ margin:10px 0 4px; font-size:13px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); }
+    .howto-item{ margin:8px 0; }
+    .howto-title{ font-weight:600; color:var(--text); }
+    .howto-desc{ margin-top:2px; color:var(--muted); font-size:14px; }
+    .rtl .support-header h2,
+    .rtl .support-header p,
+    .rtl .support-card h2,
+    .rtl .support-card p,
+    .rtl .howto-title,
+    .rtl .howto-desc{ text-align:right; }
     html{ scroll-behavior:smooth; }
-    @media (prefers-reduced-motion: reduce){
-      html{ scroll-behavior:auto; }
-      .reveal{ transition:none; transform:none; opacity:1; }
-      .btn:hover, .bullet:hover{ transform:none; }
-      .hero-media{ transition:none; }
-      .screen{ transition:none; }
-    }
+    @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } .reveal{ transition:none; transform:none; opacity:1; } .btn:hover, .bullet:hover{ transform:none; } .hero-media{ transition:none; } .screen{ transition:none; } }
   </style>
 </head>
-
 <body>
-  <!-- Sticky nav -->
   <header class="nav" role="banner">
     <div class="container nav-inner">
       <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
+        <span id="navAppIcon" class="nav-app-icon" aria-hidden="true"></span>
         <div>
           <h1 id="navTitle">AlAthan</h1>
-          <p id="navSub">Prayer times • Qibla • Lock Screen</p>
+          <p id="navSub">Prayer times • Qibla</p>
         </div>
       </div>
-
       <div class="nav-actions">
+        <div class="seg" role="tablist" aria-label="Support and policy">
+          <button id="mode-support" class="active" role="tab" aria-selected="true" type="button">Support</button>
+          <button id="mode-policy" role="tab" aria-selected="false" type="button">Policy</button>
+        </div>
+        <div class="seg" role="tablist" aria-label="Theme">
+          <button id="theme-system" class="active" role="tab" aria-selected="true" type="button">System</button>
+          <button id="theme-light" role="tab" aria-selected="false" type="button">Light</button>
+          <button id="theme-dark" role="tab" aria-selected="false" type="button">Dark</button>
+        </div>
         <div class="seg" role="tablist" aria-label="Language">
           <button id="btn-en" class="active" role="tab" aria-selected="true" type="button">EN</button>
-          <button id="btn-ar" role="tab" aria-selected="false" type="button">AR</button>
+          <button id="btn-ar" role="tab" aria-selected="false" type="button">عربي</button>
         </div>
-        <a class="btn primary" href="#chapter-prayer" id="startBtn">Start</a>
       </div>
     </div>
   </header>
 
-  <!-- HERO -->
+  <div id="appRoot">
   <section class="hero" id="hero">
     <div class="hero-media" id="heroMedia" aria-hidden="true">
       <img class="hero-img" id="heroImg" alt="" />
     </div>
     <div class="hero-overlay" aria-hidden="true"></div>
-
     <div class="container hero-inner">
       <div class="hero-grid">
         <div class="reveal">
@@ -506,422 +224,524 @@
             <span class="dot" aria-hidden="true"></span>
             <span id="heroKicker">Designed to feel native.</span>
           </div>
-
           <h2 id="heroTitle">Your daily prayer companion.</h2>
-          <p id="heroDesc">
-            Accurate prayer times, a live Qibla compass, and smart countdowns on your Lock Screen and Dynamic Island.
-          </p>
-
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-            <a class="btn primary" href="#features" id="featuresBtn">App features</a>
-            <a class="btn" href="#chapter-prayer" id="scrollBtn">Start scrolling</a>
+          <p id="heroDesc">Accurate prayer times, a live Qibla compass, and smart countdowns on your Lock Screen and Dynamic Island.</p>
+          <div class="store-row" id="storeRow">
+            <span id="appIconSlot"></span>
+            <span id="badgeSlot"></span>
           </div>
         </div>
-
-        <!-- FEATURES PANEL -->
-        <aside class="panel pad reveal" id="features">
-          <div class="field" style="margin:0;">
-            <label id="featuresLabel">App features</label>
-            <div class="val" id="featuresText"></div>
-          </div>
+        <aside class="features-panel reveal" id="features">
+          <p class="features-title" id="featuresLabel">App features</p>
+          <div class="features-list" id="featuresText"></div>
         </aside>
       </div>
     </div>
   </section>
 
-  <!-- CHAPTERS injected by JS -->
   <main id="chapters"></main>
+  </div>
+
+  <div id="supportRoot">
+    <section class="support-root">
+      <div class="container">
+        <div id="supportEn" class="support-grid">
+          <header class="support-header">
+            <h2>Support</h2>
+            <p>Need help, have feedback, or a question about AlAthan? We’re here for you.</p>
+            <div class="support-contact">
+              <span class="support-label">Email</span>
+              <a class="btn primary" href="mailto:ios707@proton.me">Email us</a>
+            </div>
+          </header>
+
+          <section class="support-card" aria-labelledby="howto-en-heading">
+            <h2 id="howto-en-heading">How to use AlAthan</h2>
+            <p>Key features and how they help you day to day.</p>
+            <div id="howToListEn" class="howto-list"></div>
+          </section>
+
+          <section class="support-card" aria-labelledby="privacy-en-heading">
+            <h2 id="privacy-en-heading">Privacy Policy</h2>
+            <p>AlAthan (“the App”) provides prayer times, Qibla direction, and related features. This policy describes how we handle information.</p>
+            <div class="policy-block">
+              <h3>Location</h3>
+              <p>The App uses your device location (or a location you choose) only to compute prayer times, moon data, and Qibla direction on your device. Location may be stored on your device for widgets and for your chosen city. We do not collect or store your location on our servers.</p>
+            </div>
+            <div class="policy-block">
+              <h3>Notifications</h3>
+              <p>Pre-athan, athan, iqama reminders, and Live Activity triggers are all local: they are scheduled and delivered entirely on your device. We may use a device token or push token; this is only used for delivering occasional notifications and is not used for marketing.</p>
+            </div>
+            <div class="policy-block">
+              <h3>Widgets &amp; Live Activities</h3>
+              <p>Prayer times and countdowns shown on the Home Screen, Lock Screen, and Dynamic Island are generated on your device from your chosen location and settings. No personal data is sent to third parties for widgets or Live Activities.</p>
+            </div>
+            <div class="policy-block">
+              <h3>Quran Radio</h3>
+              <p>Streaming is provided by a third-party (<a href="https://mp3quran.net" target="_blank" rel="noopener noreferrer">mp3quran.net</a>). Their own policies may apply to any data involved in streaming.</p>
+            </div>
+            <div class="policy-block">
+              <h3>Data we do not sell</h3>
+              <p>We do not sell your personal data. We do not use your data for advertising or cross-app tracking.</p>
+            </div>
+            <div class="policy-block">
+              <h3>Changes</h3>
+              <p>We may update this policy from time to time. The current text is always available in the app under Settings.</p>
+            </div>
+            <div class="policy-block">
+              <h3>Contact</h3>
+              <p>For questions about this policy or the App, reach out via the contact option in the About section of the app, or at <a href="mailto:ios707@proton.me">ios707@proton.me</a>.</p>
+            </div>
+          </section>
+        </div>
+
+        <div id="supportAr" class="support-grid" style="display:none;">
+          <header class="support-header">
+            <h2>الدعم</h2>
+            <p>تحتاج مساعدة أو لديك ملاحظات أو سؤال عن الأذان؟ نحن هنا من أجلك.</p>
+            <div class="support-contact">
+              <span class="support-label">البريد الإلكتروني</span>
+              <a class="btn primary" href="mailto:ios707@proton.me">راسلنا</a>
+            </div>
+          </header>
+
+          <section class="support-card" aria-labelledby="howto-ar-heading">
+            <h2 id="howto-ar-heading">كيفية استخدام التطبيق</h2>
+            <p>نظرة على أهم الميزات وكيف تساعدك يومياً.</p>
+            <div id="howToListAr" class="howto-list"></div>
+          </section>
+
+          <section class="support-card" aria-labelledby="privacy-ar-heading">
+            <h2 id="privacy-ar-heading">سياسة الخصوصية</h2>
+            <p>تطبيق الأذان يوفّر أوقات الصلاة واتجاه القبلة والميزات المرتبطة. هذه السياسة تصف كيفية تعاملنا مع المعلومات.</p>
+            <div class="policy-block">
+              <h3>الموقع</h3>
+              <p>التطبيق يستخدم موقع جهازك (أو موقعاً تختاره) فقط لحساب أوقات الصلاة وبيانات القمر واتجاه القبلة على جهازك. قد يُحفظ الموقع على الجهاز للودجات ومدينتك المختارة. نحن لا نجمع ولا نخزّن موقعك على خوادمنا.</p>
+            </div>
+            <div class="policy-block">
+              <h3>الإشعارات</h3>
+              <p>تذكيرات ما قبل الأذان والأذان والإقامة وتفعيل النشاط المباشر كلها محلية: تُجدول وتُقدّم بالكامل على جهازك. قد نستخدم رمز جهاز أو رمز دفع؛ وهو يُستخدم فقط لتوصيل إشعارات عرضية وليس للتسويق.</p>
+            </div>
+            <div class="policy-block">
+              <h3>الودجات والأنشطة المباشرة</h3>
+              <p>أوقات الصلاة والعد التنازلي المعروضة على الشاشة الرئيسية وقفل الشاشة والداينامك آيلاند تُنشأ على جهازك من موقعك وإعداداتك. لا تُرسل بيانات شخصية لأطراف ثالثة للودجات أو الأنشطة المباشرة.</p>
+            </div>
+            <div class="policy-block">
+              <h3>راديو القرآن</h3>
+              <p>البثّ يوفّره طرف ثالث (<a href="https://mp3quran.net" target="_blank" rel="noopener noreferrer">mp3quran.net</a>). سياساتهم الخاصة قد تنطبق على أي بيانات مرتبطة بالبث.</p>
+            </div>
+            <div class="policy-block">
+              <h3>ما لا نبيعه</h3>
+              <p>نحن لا نبيع بياناتك الشخصية. لا نستخدم بياناتك للإعلان أو التتبع بين التطبيقات.</p>
+            </div>
+            <div class="policy-block">
+              <h3>التغييرات</h3>
+              <p>قد نحدّث هذه السياسة من وقت لآخر. النص الحالي متاح دائماً في الإعدادات.</p>
+            </div>
+            <div class="policy-block">
+              <h3>الاتصال</h3>
+              <p>للاستفسارات عن هذه السياسة أو التطبيق، تواصل معنا عبر خيار الاتصال في قسم حول، أو على <a href="mailto:ios707@proton.me">ios707@proton.me</a>.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <script>
-    // ==========================================================
-    // 1) ASSETS (LIGHT/DARK) — ONLY EDIT URLS HERE
-    // ==========================================================
-    const BASE = "https://alathan-app.github.io/alathan-cpp/";
-
-    // Put your real filenames here.
-    // Example: prayer_grid_light.jpg / prayer_grid_dark.jpg
-    const ASSETS = {
-      prayerGrid: {
-        light: BASE + "prayer_grid_light.png",
-        dark:  BASE + "prayer_grid_dark.png"
-      },
-      lockscreenIqama: {
-        light: BASE + "lockscreen_iqama_light.png",
-        dark:  BASE + "lockscreen_iqama_dark.png"
-      },
-      widgetsStack: {
-        light: BASE + "widgets_stack_light.png",
-        dark:  BASE + "widgets_stack_dark.png"
-      },
-      widgetsOverview: {
-        light: BASE + "widgets_overview_light.png",
-        dark:  BASE + "widgets_overview_dark.png"
-      },
-      quranRadio: {
-        light: BASE + "quran_radio_light.png",
-        dark:  BASE + "quran_radio_dark.png"
-      }
+    let LANG = "en";
+    let MODE = "support";
+    let THEME_MODE = "system";
+    const mqDark = window.matchMedia("(prefers-color-scheme: dark)");
+    const THEME = () => {
+      if(THEME_MODE === "light") return "light";
+      if(THEME_MODE === "dark") return "dark";
+      return mqDark.matches ? "dark" : "light";
     };
 
-    const mqDark = window.matchMedia("(prefers-color-scheme: dark)");
-    const theme = () => (mqDark.matches ? "dark" : "light");
-    const asset = (key) => (ASSETS[key] ? ASSETS[key][theme()] : "");
+    function esc(str){
+      return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    }
+    function preloadImages(urls){ urls.forEach(u => { if(!u) return; const img = new Image(); img.src = u; }); }
 
-    function preloadImages(urls){
-      urls.forEach(u => { if(!u) return; const img = new Image(); img.src = u; });
+    const APP_ICON_MASK = "url('data:image/svg+xml,%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20230.5%20230.5%22%3E%0A%3Cpath%20fill-rule%3D%22evenodd%22%20clip-rule%3D%22evenodd%22%20d%3D%22M158.2%20230H64.1c-5%200-10-.5-15-1.3a50.8%2050.8%200%200%201-14.4-4.8%2048.2%2048.2%200%200%201-21-21%2050.9%2050.9%200%200%201-4.8-14.4c-.8-5-1.2-10-1.3-15V64.1c0-5%20.5-10%201.3-15a50.7%2050.7%200%200%201%204.8-14.4%2048.2%2048.2%200%200%201%2021-21c5-.8%2010-1.2%2015-1.3h94.1c5%200%2010%20.5%2015%201.3a52%2052%200%200%1%2014.4%204.8%2048.2%2048.2%200%200%1%2021%2021c.8%205%201.2%2010%201.3%2015v94.1c0%205-.5%2010-1.3%2015a50.7%2050.7%200%200%1-4.8%2014.4%2048.2%2048.2%200%200%1-21%2021c-5%20.8-10%201.2-15%201.3H64.1z%22%2F%3E%0A%3C%2Fsvg%3E%0A')";
+    const APP_ICON_IMG = "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6e/c8/69/6ec869cf-8646-fd79-2263-8cfe156b088c/AppIcon-0-0-1x_U007epad-0-1-85-220.png/540x540bb.jpg";
+    const NAV_APP_ICON_HTML = `<a href="https://apps.apple.com/gb/app/alathan/id6749247076"><img src="${APP_ICON_IMG}" alt="AlAthan" /></a>`;
+    const APP_STORE_ICON_HTML = `<span class="app-icon-wrap"><a href="https://apps.apple.com/gb/app/alathan/id6749247076?itscg=30200&itsct=apps_box_artwork&mttnsubad=6749247076"><img src="${APP_ICON_IMG}" alt="AlAthan" /></a></span>`;
+    const APP_STORE_BADGE = {
+      en: `<a href="https://apps.apple.com/gb/app/alathan/id6749247076?itscg=30200&itsct=apps_box_badge&mttnsubad=6749247076" style="display: inline-block;"><img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1771545600" alt="Download on the App Store" style="width: 245px; height: 82px; vertical-align: middle; object-fit: contain;" /></a>`,
+      ar: `<a href="https://apps.apple.com/gb/app/alathan/id6749247076?itscg=30200&itsct=apps_box_badge&mttnsubad=6749247076" style="display: inline-block;"><img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/ar-ar?releaseDate=1771545600" alt="Download on the App Store" style="width: 245px; height: 82px; vertical-align: middle; object-fit: contain;" /></a>`
+    };
+    function renderStoreRow(){
+      document.getElementById("appIconSlot").innerHTML = APP_STORE_ICON_HTML;
+      document.getElementById("badgeSlot").innerHTML = (LANG === "ar" ? APP_STORE_BADGE.ar : APP_STORE_BADGE.en);
     }
 
-    // Preload all current theme urls + opposite theme urls
-    preloadImages(Object.values(ASSETS).flatMap(v => [v.light, v.dark]));
+    const BASE = "https://alathan-app.github.io/alathan-cpp/";
+    const IPHONE_MOCK = BASE + "iphone_mock_overlay.png";
+    const FEATURE_NAME = {
+      prayer: "MainApp",
+      widget: "Widget",
+      notification: "Notification",
+      moon: "Moon",
+      datepick: "DatePick",
+      athkar: "Athkar",
+      radio: "Radio",
+      shortcut: "Shortcut",
+      watchMain: "WatchMainApp",
+      watchNext: "WatchNextPrayer",
+      watchQibla: "WatchQibla",
+      watchRadio: "WatchRadio",
+      watchLive: "WatchLiveActivity",
+      watchCount: "WatchCountingDown"
+    };
+    /* Fallbacks when a variant is missing on the server (use existing file for that feature) */
+    const FILE_OVERRIDES = {};
+    const LANG_LETTER = () => (LANG === "ar" ? "A" : "E");
+    const MODE_WORD = () => (THEME() === "dark" ? "Dark" : "Light");
+    const OTHER_MODE = () => (THEME() === "dark" ? "Light" : "Dark");
 
-    // Set hero image (will auto update on theme change)
-    const heroImg = document.getElementById("heroImg");
-    heroImg.src = asset("prayerGrid");
+    function shotUrl(shotId){
+      const feature = FEATURE_NAME[shotId];
+      if(!feature) return "";
+      const mode = MODE_WORD();
+      const lang = LANG_LETTER();
+      const key = `${feature}|${mode}|${lang}`;
+      const filename = FILE_OVERRIDES[key] ?? `${feature}${mode}${lang}.png`;
+      return BASE + filename;
+    }
+    function shotUrlFallback(shotId){
+      const feature = FEATURE_NAME[shotId];
+      if(!feature) return "";
+      const mode = MODE_WORD();
+      const otherLang = LANG === "ar" ? "E" : "A";
+      const key = `${feature}|${mode}|${otherLang}`;
+      const filename = FILE_OVERRIDES[key] ?? `${feature}${mode}${otherLang}.png`;
+      return BASE + filename;
+    }
+    function shotUrlForScreen(shotId){
+      // Use current theme + language for all features, including DatePick
+      return shotUrlWithLang(shotId, LANG_LETTER());
+    }
+    /* Fallback: same language + alternate theme for phone; for Watch use other language (no theme variant). */
+    function shotUrlForScreenFallback(shotId){
+      const feature = FEATURE_NAME[shotId];
+      if(feature && feature.startsWith("Watch")) return shotUrlWithLangAndMode(shotId, LANG === "ar" ? "E" : "A", "Light");
+      return shotUrlWithLangAndMode(shotId, LANG_LETTER(), OTHER_MODE());
+    }
+    function shotUrlWithLang(shotId, langLetter){
+      return shotUrlWithLangAndMode(shotId, langLetter, MODE_WORD());
+    }
+    function shotUrlWithLangAndMode(shotId, langLetter, mode){
+      const feature = FEATURE_NAME[shotId];
+      if(!feature) return "";
+      if(feature.startsWith("Watch")){
+        const filename = `${feature}${langLetter}.png`;
+        return BASE + filename;
+      }
+      const key = `${feature}|${mode}|${langLetter}`;
+      const filename = FILE_OVERRIDES[key] ?? `${feature}${mode}${langLetter}.png`;
+      return BASE + filename;
+    }
 
-    // ==========================================================
-    // 2) FEATURES (EN/AR)
-    // ==========================================================
+    function preloadAllShots(){
+      const features = Object.values(FEATURE_NAME);
+      const modes = ["Light", "Dark"];
+      const langs = ["A", "E"];
+      const urls = [IPHONE_MOCK];
+      features.forEach(f => {
+        if(f.startsWith("Watch")){ langs.forEach(l => { urls.push(BASE + `${f}${l}.png`); }); return; }
+        modes.forEach(m => { langs.forEach(l => { const key = `${f}|${m}|${l}`; const filename = FILE_OVERRIDES[key] ?? `${f}${m}${l}.png`; urls.push(BASE + filename); }); });
+      });
+      preloadImages(urls);
+    }
+    preloadAllShots();
+
     const FEATURES = {
       en: [
-        "🌙 AlAthan — your daily prayer companion",
-        "✨ Accurate prayer times based on your location",
-        "🧭 Live Qibla compass towards the Kaaba",
-        "⏳ Smart countdown on Lock Screen and Dynamic Island",
-        "🔔 So you never miss a prayer",
+        "Prayer times — location, calculation methods, Hijri & moon",
+        "Qibla compass — real-time direction, works offline",
+        "Notifications — Athan sounds, reminders, per-prayer settings",
+        "Live Activity & Dynamic Island — iqama countdown",
+        "Widgets — Home & Lock Screen, Apple Watch",
+        "Athkar — daily remembrances section",
+        "Quran Radio — continuous recitation",
+        "25+ languages, CarPlay, light/dark mode",
         "",
-        "🚀 Features & functionality",
-        "",
-        "🕌 Prayer times — location or any city; multiple calculation methods; Hijri date + moon phase",
-        "🧭 Qibla compass — real-time direction; degree accuracy; works offline",
-        "🔔 Notifications — multiple Athan sounds; pre-prayer reminders (5–30 min); adjustable iqama (5/10/15); per-prayer settings; mute all anytime",
-        "⏳ Live Activity & Dynamic Island — live iqama countdown; progress from athan → iqama; starts near prayer time and ends at iqama",
-        "🧩 Widgets — Home + Lock Screen widgets; next prayer + countdown + progress; Apple Watch support",
-        "📻 Quran Radio — continuous recitation; multiple reciters/stations (third-party sources)",
-        "⭐ More — 25+ languages; CarPlay; light/dark mode; privacy-first (location & times stay on device; no marketing use)",
-        "",
-        "💙 Simplicity • Accuracy • Privacy"
+        "Simplicity · Accuracy · Privacy"
       ],
       ar: [
-        "🌙 تطبيق الأذان — رفيقك اليومي للصلاة",
-        "✨ أوقات صلاة دقيقة حسب موقعك",
-        "🧭 بوصلة قبلة حيّة باتجاه الكعبة",
-        "⏳ عدّ تنازلي ذكي على شاشة القفل والجزيرة التفاعلية",
-        "🔔 حتى لا تفوتك الصلاة أبداً",
+        "أوقات الصلاة — الموقع، طرق الحساب، الهجري والقمر",
+        "بوصلة القبلة — اتجاه حي، تعمل بدون إنترنت",
+        "الإشعارات — أصوات أذان، تذكيرات، إعدادات لكل صلاة",
+        "العرض المباشر والجزيرة — عدّ الإقامة",
+        "الويدجت — الشاشة الرئيسية والقفل، Apple Watch",
+        "الأذكار — قسم للأذكار اليومية",
+        "راديو القرآن — تلاوة متواصلة",
+        "أكثر من 25 لغة، CarPlay، مظهر فاتح وداكن",
         "",
-        "🚀 الميزات والوظائف",
-        "",
-        "🕌 أوقات الصلاة — حسب موقعك أو المدينة؛ طرق حساب متعددة؛ التاريخ الهجري + طور القمر",
-        "🧭 بوصلة القبلة — اتجاه حي؛ قراءة بالدرجات؛ تعمل بدون إنترنت",
-        "🔔 الإشعارات — أصوات أذان متعددة؛ تذكير ٥–٣٠ دقيقة؛ إقامة ٥/١٠/١٥؛ إعدادات لكل صلاة؛ خيار إيقاف الكل",
-        "⏳ العرض المباشر والجزيرة — عدّ تنازلي حي؛ تقدم من الأذان → الإقامة؛ يبدأ تلقائياً وينتهي عند الإقامة",
-        "🧩 الويدجت — للشاشة الرئيسية والقفل؛ الصلاة التالية + العدّ التنازلي + شريط التقدم؛ دعم Apple Watch",
-        "📻 راديو القرآن — تلاوة متواصلة؛ مقرئون ومحطات متعددة؛ من مصادر طرف ثالث",
-        "⭐ المزيد — أكثر من 25 لغة؛ CarPlay؛ مظهر داكن وفاتح؛ الخصوصية أولاً (الموقع والأوقات على جهازك)",
-        "",
-        "💙 البساطة • الدقة • الخصوصية"
+        "البساطة · الدقة · الخصوصية"
       ]
     };
 
-    // ==========================================================
-    // 3) CHAPTERS (EN/AR) — drives sticky screenshot swaps
-    // ==========================================================
+    // App Features list (as in in-app Settings → App Features)
+    // Format: "Title — Description" so we can split into two lines in the Support section.
+    const HOWTO_FEATURES = {
+      en: [
+        "Accurate Prayer Times — Get precise prayer times for Fajr, Dhuhr, Asr, Maghrib, and Isha based on your location, with multiple calculation methods and automatic updates for sunrise, midnight, last third of the night, and Absence of twilight time under Isha when applicable.",
+        "Location — Set your city or use current location for accurate prayer times and Qibla. Tap the location name on the main screen to search or pick a point on the map, then view times either in your home timezone or the destination’s local time.",
+        "Qibla Compass — Find the direction to Mecca with a real-time compass that uses your device sensors to show an accurate Qibla angle and guide you to face the right direction.",
+        "Customizable Notifications — Set up pre-prayer reminders, Athan alerts, and Iqama notifications. Choose from multiple Athan sounds, adjust Iqama delay per prayer, and enable or mute each notification type independently.",
+        "Widgets & Complications — Add prayer time widgets to your Home Screen and Lock Screen, and Apple Watch complications, so you can see the next prayer and countdown without opening the app.",
+        "Live Activities — During prayer time, see a live countdown to Iqama on your Lock Screen and Dynamic Island, updating in real time from Athan until Iqama completes.",
+        "Multiple Languages — Use AlAthan in over 25 languages including Arabic, English, Urdu, Turkish and more, and switch the app language anytime from Settings.",
+        "Siri Support — Ask Siri for prayer times, next prayer, or Qibla direction. For example: “Hey Siri, what’s the next prayer?” or “Hey Siri, open Prayer Time.” to jump into the app hands‑free.",
+        "Hijri Calendar — View the current Hijri date alongside the Gregorian date at the top of the app, always kept in sync with your location and prayer schedule.",
+        "Prayer Times for Any Date — View prayer times for any day—past, present, or future. Tap the Hijri date on the home screen to open the calendar, pick a date, and see the full schedule.",
+        "Moon Details — Tap the moon on the home screen to see the current phase, illumination percentage, moonrise and moonset for your location, plus a calendar view for any date.",
+        "Athkar — Keep your daily remembrance in one place with curated Athkar collections you can browse and recite throughout the day.",
+        "Quran Radio — Listen to continuous Quran recitation from multiple stations. Tap play to start immediately, or long‑press to open the full station list and set your default channel.",
+        "CarPlay — Use AlAthan safely in your car with CarPlay: access Quran Radio and Prayer Times on your car’s display when connected to a CarPlay‑enabled vehicle or accessory."
+      ],
+      ar: [
+        "أوقات صلاة دقيقة — احصل على أوقات صلاة دقيقة للفجر والظهر والعصر والمغرب والعشاء بناءً على موقعك، مع طرق حساب متعددة وتحديث تلقائي للشروق ومنتصف الليل والثلث الأخير من الليل، مع عرض وقت اختفاء الشفق أسفل العشاء عند توفره.",
+        "الموقع — حدد مدينتك أو استخدم موقعك الحالي لأوقات الصلاة والقبلة الدقيقة. اضغط على اسم الموقع في الشاشة الرئيسية للبحث عن مدينة أو اختيار نقطة على الخريطة، ثم اعرض الأوقات حسب توقيتك المحلي أو توقيت الوجهة.",
+        "بوصلة القبلة — ابحث عن اتجاه مكة المكرمة باستخدام بوصلة في الوقت الفعلي تستفيد من حساسات الجهاز لعرض زاوية القبلة بدقة وتوجيهك للاتجاه الصحيح للصلاة.",
+        "إشعارات قابلة للتخصيص — قم بإعداد تذكيرات ما قبل الصلاة وتنبيهات الأذان وإشعارات الإقامة. اختر من بين أصوات أذان متعددة، واضبط وقت الإقامة لكل صلاة، وفعّل أو عطل كل نوع من الإشعارات بشكل مستقل.",
+        "الويدجت والتعقيدات — أضف ويدجت أوقات الصلاة إلى شاشتك الرئيسية وشاشة القفل، وتعقيدات Apple Watch، حتى ترى الصلاة القادمة والعدّ التنازلي بدون فتح التطبيق.",
+        "الأنشطة المباشرة — أثناء وقت الصلاة، شاهد العدّ التنازلي المباشر حتى الإقامة على شاشة القفل والجزيرة الديناميكية، مع تحديث مستمر من الأذان حتى انتهاء وقت الإقامة.",
+        "لغات متعددة — استخدم تطبيق الأذان بأكثر من 25 لغة بما في ذلك العربية والإنجليزية والأردية والتركية وغيرها، مع إمكانية تغيير لغة التطبيق من الإعدادات في أي وقت.",
+        "دعم سيري — اسأل سيري عن أوقات الصلاة أو الصلاة القادمة أو اتجاه القبلة. على سبيل المثال: «يا سيري، ما الصلاة القادمة؟» أو «يا سيري، افتح تطبيق الأذان» للوصول السريع بدون استخدام اليدين.",
+        "التقويم الهجري — اعرض التاريخ الهجري الحالي بجانب التاريخ الميلادي في أعلى التطبيق، مع مزامنة مستمرة مع موقعك وجدول أوقات الصلاة.",
+        "أوقات الصلاة لأي تاريخ — اعرض أوقات الصلاة لأي يوم—الماضي أو الحاضر أو المستقبل. اضغط على التاريخ الهجري في الشاشة الرئيسية لفتح التقويم، ثم اختر التاريخ الذي تريده لعرض جدول اليوم الكامل.",
+        "تفاصيل القمر — اضغط على أيقونة القمر في الشاشة الرئيسية لفتح عرض القمر: اسم الطور، نسبة الإضاءة، أوقات الشروق والغروب لموقعك، وتقويم يمكنك من خلاله استعراض أي تاريخ.",
+        "الأذكار — احتفظ بأذكارك اليومية في مكان واحد مع مجموعات أذكار مختارة يمكنك تصفحها وقراءتها على مدار اليوم.",
+        "اذاعة القرآن — استمع إلى تلاوة القرآن المستمرة من عدة إذاعات. اضغط زر التشغيل لبدء الاستماع فوراً، أو اضغط مطولاً لفتح قائمة المحطات الكاملة وتعيين إذاعتك المفضلة كافتراضية.",
+        "كاربلاي — استخدم التطبيق في سيارتك مع CarPlay؛ يمكنك الوصول إلى اذاعة القرآن وأوقات الصلاة من شاشة السيارة عند الاتصال بمركبة أو ملحق يدعم CarPlay."
+      ]
+    };
+
     const CHAPTERS = [
-      {
-        key: "prayer",
-        en: {
-          badge: "Prayer times",
-          title: "Accurate prayer times. Clean at a glance.",
-          lead: "A calm grid that makes the next prayer obvious — with Hijri date and moon phase.",
-          bullets: [
-            { t: "At-a-glance schedule", h: "Your day in one clean view.", img: "prayerGrid" },
-            { t: "Live countdown", h: "Lock Screen + Dynamic Island focus.", img: "lockscreenIqama" },
-            { t: "Widgets that stay", h: "Home + Lock Screen widgets in multiple sizes.", img: "widgetsOverview" }
-          ]
-        },
-        ar: {
-          badge: "أوقات الصلاة",
-          title: "أوقات دقيقة. نظرة واضحة.",
-          lead: "شبكة هادئة تُبرز الصلاة القادمة — مع التاريخ الهجري وطور القمر.",
-          bullets: [
-            { t: "جدول بنظرة واحدة", h: "يومك بالكامل في شاشة واحدة.", img: "prayerGrid" },
-            { t: "عدّ تنازلي حي", h: "شاشة القفل + الجزيرة التفاعلية.", img: "lockscreenIqama" },
-            { t: "ويدجت تبقى معك", h: "ويدجت للشاشة الرئيسية والقفل.", img: "widgetsOverview" }
-          ]
-        }
-      },
-      {
-        key: "qibla",
-        en: {
-          badge: "Qibla",
-          title: "Live Qibla, made simple.",
-          lead: "A clean experience that feels native — perfect for daily use and travel.",
-          bullets: [
-            { t: "Open. Align. Done.", h: "Minimal overlays, maximum clarity.", img: "widgetsStack" },
-            { t: "Offline-ready", h: "Works without internet.", img: "widgetsStack" },
-            { t: "Matches your setup", h: "Light/Dark consistency.", img: "prayerGrid" }
-          ]
-        },
-        ar: {
-          badge: "القبلة",
-          title: "قبلة مباشرة… ببساطة.",
-          lead: "تجربة نظيفة تبدو أصلية — مثالية للاستخدام اليومي والسفر.",
-          bullets: [
-            { t: "افتح. وجّه. انتهى.", h: "نصوص قليلة—وضوح أعلى.", img: "widgetsStack" },
-            { t: "يعمل دون إنترنت", h: "ثبات وموثوقية أثناء السفر.", img: "widgetsStack" },
-            { t: "تناسق داكن/فاتح", h: "اتساق التصميم.", img: "prayerGrid" }
-          ]
-        }
-      },
-      {
-        key: "widgets",
-        en: {
-          badge: "Widgets & Watch",
-          title: "Widgets that feel like part of iOS.",
-          lead: "Next prayer, countdown, and progress — on Home Screen, Lock Screen, and Apple Watch.",
-          bullets: [
-            { t: "Widget wall", h: "Multiple sizes with consistent style.", img: "widgetsOverview" },
-            { t: "Smart Stack moments", h: "Designed for quick glances.", img: "widgetsStack" },
-            { t: "From athan to iqama", h: "Progress you can read instantly.", img: "lockscreenIqama" }
-          ]
-        },
-        ar: {
-          badge: "الويدجت والساعة",
-          title: "ويدجت تبدو جزءاً من iOS.",
-          lead: "الصلاة التالية والعدّ التنازلي وشريط التقدم — على الشاشة الرئيسية والقفل والساعة.",
-          bullets: [
-            { t: "أحجام متعددة", h: "تنسيق متسق بأسلوب Apple.", img: "widgetsOverview" },
-            { t: "لحظات Smart Stack", h: "مصممة للنظرة السريعة.", img: "widgetsStack" },
-            { t: "من الأذان للإقامة", h: "تقدم واضح فوراً.", img: "lockscreenIqama" }
-          ]
-        }
-      },
-      {
-        key: "radio",
-        en: {
-          badge: "Quran Radio",
-          title: "Continuous Quran recitation.",
-          lead: "Choose a station and start listening instantly — simple, calm, and focused.",
-          bullets: [
-            { t: "Pick a station", h: "Fast selection, minimal UI.", img: "quranRadio" },
-            { t: "Listen anytime", h: "Perfect for daily routine.", img: "quranRadio" },
-            { t: "Built-in harmony", h: "Matches the rest of the app.", img: "quranRadio" }
-          ]
-        },
-        ar: {
-          badge: "راديو القرآن",
-          title: "تلاوة قرآنية متواصلة.",
-          lead: "اختر محطة وابدأ الاستماع فوراً — تجربة بسيطة وهادئة.",
-          bullets: [
-            { t: "اختر محطة", h: "واجهة بسيطة وسريعة.", img: "quranRadio" },
-            { t: "استماع في أي وقت", h: "مناسب لروتينك اليومي.", img: "quranRadio" },
-            { t: "تناغم كامل", h: "متناسق مع أسلوب التطبيق.", img: "quranRadio" }
-          ]
-        }
-      }
+      { key: "prayer", en: { badge: "Prayer times", title: "Accurate prayer times. Clean at a glance.", lead: "A calm grid that makes the next prayer obvious — with Hijri date and moon phase.", bullets: [ { t: "Main screen", h: "Your schedule in one view.", shotId: "prayer" }, { t: "Date picker", h: "Jump to any day quickly.", shotId: "datepick" }, { t: "Moon & Hijri", h: "Track the lunar month easily.", shotId: "moon" } ] }, ar: { badge: "أوقات الصلاة", title: "أوقات دقيقة. نظرة واضحة.", lead: "شبكة هادئة تُبرز الصلاة القادمة — مع التاريخ الهجري وطور القمر.", bullets: [ { t: "الشاشة الرئيسية", h: "جدول اليوم في نظرة واحدة.", shotId: "prayer" }, { t: "اختيار التاريخ", h: "الانتقال لأي يوم بسرعة.", shotId: "datepick" }, { t: "طور القمر", h: "متابعة الشهر الهجري.", shotId: "moon" } ] } },
+      { key: "widgets", en: { badge: "Widgets", title: "Widgets that feel like part of iOS.", lead: "Next prayer and countdown on Home Screen and Lock Screen.", bullets: [ { t: "Medium widget", h: "Quick glance prayer times.", shotId: "widget" }, { t: "Notifications", h: "Athan alerts with reminders.", shotId: "notification" } ] }, ar: { badge: "الويدجت", title: "ويدجت تبدو جزءاً من iOS.", lead: "الصلاة التالية والعدّ التنازلي على الشاشة الرئيسية والقفل.", bullets: [ { t: "ويدجت متوسط", h: "نظرة سريعة لأوقات الصلاة.", shotId: "widget" }, { t: "الإشعارات", h: "تنبيهات الأذان والتذكير.", shotId: "notification" } ] } },
+      { key: "watch", en: { badge: "Apple Watch", title: "Prayer times on your wrist.", lead: "Glance at the next prayer, Qibla, and more from your Watch.", bullets: [ { t: "Main", h: "Your day at a glance.", shotId: "watchMain" }, { t: "Next prayer", h: "Countdown and time.", shotId: "watchNext" }, { t: "Qibla", h: "Direction on your wrist.", shotId: "watchQibla" }, { t: "Radio", h: "Quran recitation.", shotId: "watchRadio" }, { t: "Live Activity", h: "Iqama countdown.", shotId: "watchLive" }, { t: "Counting down", h: "Until next prayer.", shotId: "watchCount" } ] }, ar: { badge: "Apple Watch", title: "أوقات الصلاة على معصمك.", lead: "نظرة سريعة للصلاة القادمة والقبلة والمزيد من الساعة.", bullets: [ { t: "الرئيسية", h: "يومك في نظرة واحدة.", shotId: "watchMain" }, { t: "الصلاة القادمة", h: "العدّ التنازلي والوقت.", shotId: "watchNext" }, { t: "القبلة", h: "الاتجاه على معصمك.", shotId: "watchQibla" }, { t: "الراديو", h: "تلاوة القرآن.", shotId: "watchRadio" }, { t: "العرض المباشر", h: "عدّ الإقامة.", shotId: "watchLive" }, { t: "العدّ التنازلي", h: "حتى الصلاة القادمة.", shotId: "watchCount" } ] } },
+      { key: "extras", en: { badge: "Daily tools", title: "Built for daily spiritual routines.", lead: "Tools that make daily practice easier.", bullets: [ { t: "Athkar", h: "Daily remembrance in one place.", shotId: "athkar" }, { t: "Quran Radio", h: "Continuous Quran recitation.", shotId: "radio" }, { t: "Siri Shortcut", h: "Quick access actions.", shotId: "shortcut" } ] }, ar: { badge: "الأدوات اليومية", title: "مصمم لروتينك اليومي.", lead: "أدوات تساعدك في عبادتك اليومية.", bullets: [ { t: "الأذكار", h: "أذكار يومية في مكان واحد.", shotId: "athkar" }, { t: "راديو القرآن", h: "تلاوة متواصلة.", shotId: "radio" }, { t: "اختصار Siri", h: "وصول سريع للميزات.", shotId: "shortcut" } ] } }
     ];
-
-    // ==========================================================
-    // 4) RENDER
-    // ==========================================================
-    let LANG = "en";
-
-    function esc(str){
-      return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
 
     function applyTopCopy(){
       if(LANG === "ar"){
-        document.documentElement.lang="ar";
-        document.body.classList.add("rtl");
-        document.getElementById("navTitle").textContent="AlAthan";
-        document.getElementById("navSub").textContent="أوقات الصلاة • القبلة • شاشة القفل";
-        document.getElementById("startBtn").textContent="ابدأ";
-        document.getElementById("heroKicker").textContent="مصمم ليبدو أصلياً.";
-        document.getElementById("heroTitle").textContent="رفيقك اليومي للصلاة.";
-        document.getElementById("heroDesc").textContent="أوقات دقيقة، بوصلة قبلة حيّة، وعدّ تنازلي ذكي على شاشة القفل والجزيرة التفاعلية.";
-        document.getElementById("featuresBtn").textContent="ميزات التطبيق";
-        document.getElementById("scrollBtn").textContent="ابدأ التمرير";
+        document.documentElement.lang="ar"; document.body.classList.add("rtl");
+        document.getElementById("navTitle").textContent="AlAthan"; document.getElementById("navSub").textContent="أوقات الصلاة • القبلة";
+        document.getElementById("heroKicker").textContent="مصمم ليبدو أصلياً."; document.getElementById("heroTitle").textContent="رفيقك اليومي للصلاة."; document.getElementById("heroDesc").textContent="أوقات دقيقة، بوصلة قبلة حيّة، وعدّ تنازلي ذكي على شاشة القفل والجزيرة التفاعلية.";
         document.getElementById("featuresLabel").textContent="ميزات التطبيق";
+        const supportBtn = document.getElementById("mode-support");
+        const policyBtn = document.getElementById("mode-policy");
+        if(supportBtn && policyBtn){
+          supportBtn.textContent = "الدعم";
+          policyBtn.textContent = "الخصوصية";
+        }
+        const themeSystem = document.getElementById("theme-system");
+        const themeLight = document.getElementById("theme-light");
+        const themeDark = document.getElementById("theme-dark");
+        if(themeSystem && themeLight && themeDark){
+          themeSystem.textContent = "النظام";
+          themeLight.textContent = "فاتح";
+          themeDark.textContent = "داكن";
+        }
       }else{
-        document.documentElement.lang="en";
-        document.body.classList.remove("rtl");
-        document.getElementById("navTitle").textContent="AlAthan";
-        document.getElementById("navSub").textContent="Prayer times • Qibla • Lock Screen";
-        document.getElementById("startBtn").textContent="Start";
-        document.getElementById("heroKicker").textContent="Designed to feel native.";
-        document.getElementById("heroTitle").textContent="Your daily prayer companion.";
-        document.getElementById("heroDesc").textContent="Accurate prayer times, a live Qibla compass, and smart countdowns on your Lock Screen and Dynamic Island.";
-        document.getElementById("featuresBtn").textContent="App features";
-        document.getElementById("scrollBtn").textContent="Start scrolling";
+        document.documentElement.lang="en"; document.body.classList.remove("rtl");
+        document.getElementById("navTitle").textContent="AlAthan"; document.getElementById("navSub").textContent="Prayer times • Qibla";
+        document.getElementById("heroKicker").textContent="Designed to feel native."; document.getElementById("heroTitle").textContent="Your daily prayer companion."; document.getElementById("heroDesc").textContent="Accurate prayer times, a live Qibla compass, and smart countdowns on your Lock Screen and Dynamic Island.";
         document.getElementById("featuresLabel").textContent="App features";
+        const supportBtn = document.getElementById("mode-support");
+        const policyBtn = document.getElementById("mode-policy");
+        if(supportBtn && policyBtn){
+          supportBtn.textContent = "Support";
+          policyBtn.textContent = "Policy";
+        }
+        const themeSystem = document.getElementById("theme-system");
+        const themeLight = document.getElementById("theme-light");
+        const themeDark = document.getElementById("theme-dark");
+        if(themeSystem && themeLight && themeDark){
+          themeSystem.textContent = "System";
+          themeLight.textContent = "Light";
+          themeDark.textContent = "Dark";
+        }
       }
     }
-
+    function applySupportLang(){
+      const showEn = (LANG === "en");
+      const en = document.getElementById("supportEn");
+      const ar = document.getElementById("supportAr");
+      if(en && ar){
+        en.style.display = showEn ? "" : "none";
+        ar.style.display = showEn ? "none" : "";
+      }
+    }
+    function renderHowTo(){
+      const lines = HOWTO_FEATURES[LANG] || [];
+      const targetId = LANG === "ar" ? "howToListAr" : "howToListEn";
+      const host = document.getElementById(targetId);
+      if(!host) return;
+      const html = lines.map(line => {
+        if(line === "") return '<div class="howto-group-spacer"></div>';
+        const parts = line.split("—");
+        if(parts.length >= 2){
+          const title = esc(parts[0].trim());
+          const desc = esc(parts.slice(1).join("—").trim());
+          return `<div class="howto-item"><div class="howto-title">${title}</div><div class="howto-desc">${desc}</div></div>`;
+        }
+        // Section label or tagline
+        return `<div class="howto-label">${esc(line)}</div>`;
+      }).join("");
+      host.innerHTML = html;
+    }
+    function applyThemeAttribute(){
+      const root = document.documentElement;
+      if(THEME_MODE === "system"){
+        root.removeAttribute("data-theme");
+      }else{
+        root.setAttribute("data-theme", THEME_MODE);
+      }
+    }
+    function setThemeMode(mode){
+      THEME_MODE = mode;
+      applyThemeAttribute();
+      const sysBtn = document.getElementById("theme-system");
+      const lightBtn = document.getElementById("theme-light");
+      const darkBtn = document.getElementById("theme-dark");
+      if(sysBtn && lightBtn && darkBtn){
+        sysBtn.classList.toggle("active", mode === "system");
+        lightBtn.classList.toggle("active", mode === "light");
+        darkBtn.classList.toggle("active", mode === "dark");
+      }
+      applyThemeAssets();
+    }
     function renderFeatures(){
       const lines = FEATURES[LANG] || [];
-      document.getElementById("featuresText").textContent = lines.join("\n");
+      const nonEmpty = lines.filter(l => l !== "");
+      const html = lines.map((line, i) => {
+        if (line === "") return '<span class="line break"></span>';
+        const isTagline = line === nonEmpty[nonEmpty.length - 1] && nonEmpty.length > 1;
+        return `<span class="line${isTagline ? " tagline" : ""}">${esc(line)}</span>`;
+      }).join("");
+      document.getElementById("featuresText").innerHTML = html;
     }
 
     function renderChapters(){
       const host = document.getElementById("chapters");
       host.innerHTML = "";
-
       CHAPTERS.forEach((ch) => {
         const c = ch[LANG];
-
-        const bulletsHtml = c.bullets.map((b,i)=>`
-          <div class="bullet ${i===0 ? "active":""}" data-chapter="${ch.key}" data-bullet="${i}">
-            <p class="k">${LANG==="ar" ? "لقطة" : "Shot"} ${i+1}</p>
-            <p class="t">${esc(b.t)}</p>
-            <p class="h">${esc(b.h)}</p>
-          </div>
-        `).join("");
-
-        const screensHtml = c.bullets.map((b,i)=>`
-          <div class="screen ${i===0 ? "active":""}" data-bullet="${i}">
-            <img class="img" data-asset="${esc(b.img)}" src="${esc(asset(b.img))}" alt="" loading="eager" />
-            <div class="caption">
-              <p class="t">${esc(b.t)}</p>
-              <p class="s">${esc(b.h)}</p>
-            </div>
-          </div>
-        `).join("");
-
+        const bulletsHtml = c.bullets.map((b,i)=>`<div class="bullet ${i===0 ? "active":""}" data-chapter="${ch.key}" data-bullet="${i}"><p class="t">${esc(b.t)}</p><p class="h">${esc(b.h)}</p></div>`).join("");
+        const screensHtml = c.bullets.map((b,i)=>`<div class="screen ${i===0 ? "active":""}" data-bullet="${i}" data-shotid="${esc(b.shotId)}"><img data-shotid="${esc(b.shotId)}" src="${esc(shotUrlForScreen(b.shotId))}" data-fallback="${esc(shotUrlForScreenFallback(b.shotId))}" alt="" loading="eager" onerror="var f=this.getAttribute('data-fallback');if(f){this.onerror=null;this.src=f;}" /></div>`).join("");
         const section = document.createElement("section");
-        section.className = "chapter";
-        section.id = "chapter-" + ch.key;
-
-        section.innerHTML = `
-          <div class="container chapter-inner">
-            <div class="reveal">
-              <div class="badge">${esc(c.badge)}</div>
-              <h3>${esc(c.title)}</h3>
-              <p class="lead">${esc(c.lead)}</p>
-              <div class="bullets">${bulletsHtml}</div>
-            </div>
-
-            <div class="mock-wrap reveal">
-              <div class="phone" aria-label="Sticky screenshot mock">
-                <div class="island" aria-hidden="true"></div>
-                <div class="mock">${screensHtml}</div>
-              </div>
-            </div>
-          </div>
-        `;
-
+        section.className = "chapter"; section.id = "chapter-" + ch.key;
+        section.innerHTML = `<div class="container chapter-inner"><div class="reveal"><div class="badge">${esc(c.badge)}</div><h3>${esc(c.title)}</h3><p class="lead">${esc(c.lead)}</p><div class="bullets">${bulletsHtml}</div></div><div class="mock-wrap reveal"><div class="phone-stage" aria-label="Sticky iPhone mock"><div class="screen-stack">${screensHtml}</div><img class="iphone-overlay" src="${esc(IPHONE_MOCK)}" alt="" /></div></div></div>`;
         host.appendChild(section);
       });
-
-      // bullet click => swap screen
-      document.querySelectorAll(".bullet").forEach(b => {
-        b.addEventListener("click", () => {
-          const chapterKey = b.getAttribute("data-chapter");
-          const idx = Number(b.getAttribute("data-bullet"));
-          activateBullet(chapterKey, idx);
-        });
-      });
+      document.querySelectorAll(".bullet").forEach(b => { b.addEventListener("click", () => { const chapterKey = b.getAttribute("data-chapter"); const idx = Number(b.getAttribute("data-bullet")); activateBullet(chapterKey, idx); }); });
     }
-
     function activateBullet(chapterKey, bulletIndex){
-      // activate bullet
-      document.querySelectorAll(`.bullet[data-chapter="${chapterKey}"]`).forEach(el => {
-        el.classList.toggle("active", Number(el.getAttribute("data-bullet")) === bulletIndex);
-      });
-      // activate screen
-      document.querySelectorAll(`#chapter-${chapterKey} .screen`).forEach(el => {
-        el.classList.toggle("active", Number(el.getAttribute("data-bullet")) === bulletIndex);
-      });
+      document.querySelectorAll(`.bullet[data-chapter="${chapterKey}"]`).forEach(el => { el.classList.toggle("active", Number(el.getAttribute("data-bullet")) === bulletIndex); });
+      document.querySelectorAll(`#chapter-${chapterKey} .screen`).forEach(el => { el.classList.toggle("active", Number(el.getAttribute("data-bullet")) === bulletIndex); });
     }
 
-    // ==========================================================
-    // 5) OBSERVERS (reveal + auto bullet advance)
-    // ==========================================================
-    let ioReveal, ioBullets;
-
-    function wireObservers(){
-      ioReveal?.disconnect();
-      ioReveal = new IntersectionObserver((entries)=>{
-        entries.forEach(e => { if(e.isIntersecting) e.target.classList.add("in"); });
-      }, { threshold: 0.12 });
-      document.querySelectorAll(".reveal").forEach(el => ioReveal.observe(el));
-
-      ioBullets?.disconnect();
-      ioBullets = new IntersectionObserver((entries)=>{
-        const visible = entries.filter(e=>e.isIntersecting);
+    let ioReveal, ioAutoFlip;
+    function wireReveal(){ ioReveal?.disconnect(); ioReveal = new IntersectionObserver((entries)=>{ entries.forEach(e => { if(e.isIntersecting) e.target.classList.add("in"); }); }, { threshold: 0.12 }); document.querySelectorAll(".reveal").forEach(el => ioReveal.observe(el)); }
+    function wireAutoFlip(){
+      ioAutoFlip?.disconnect();
+      ioAutoFlip = new IntersectionObserver((entries)=>{
+        const visible = entries.filter(e => e.isIntersecting);
         if(!visible.length) return;
-        const best = visible.sort((a,b)=>b.intersectionRatio - a.intersectionRatio)[0];
-        const chapter = best.target.getAttribute("data-chapter");
-        const bullet = Number(best.target.getAttribute("data-bullet"));
-        if(chapter && Number.isFinite(bullet)) activateBullet(chapter, bullet);
-      }, { threshold: [0.25,0.45,0.65], rootMargin: "-25% 0px -55% 0px" });
-
-      document.querySelectorAll(".bullet").forEach(el => ioBullets.observe(el));
+        const centerY = window.innerHeight * 0.38;
+        const pastThreshold = 80;
+        const inView = visible.filter(e => e.boundingClientRect.top >= -pastThreshold);
+        const candidates = inView.length ? inView : visible;
+        const belowCenter = candidates.filter(e => (e.boundingClientRect.top + e.boundingClientRect.height / 2) >= centerY);
+        const pool = belowCenter.length ? belowCenter : candidates;
+        let best = null, bestDist = Infinity;
+        pool.forEach(e => { const r = e.boundingClientRect; const mid = r.top + r.height / 2; const dist = Math.abs(mid - centerY); if(dist < bestDist){ bestDist = dist; best = e; } });
+        if(!best) return;
+        const el = best.target; const chapterKey = el.getAttribute("data-chapter"); const idx = Number(el.getAttribute("data-bullet"));
+        if(chapterKey && Number.isFinite(idx)) activateBullet(chapterKey, idx);
+      }, { root: null, threshold: [0.25, 0.5, 0.75], rootMargin: "-25% 0px -50% 0px" });
+      document.querySelectorAll(".bullet").forEach(el => ioAutoFlip.observe(el));
     }
 
-    // ==========================================================
-    // 6) THEME SWITCH — update all screenshots when system theme changes
-    // ==========================================================
+    const heroImg = document.getElementById("heroImg");
     function applyThemeAssets(){
-      heroImg.src = asset("prayerGrid");
-      document.querySelectorAll("img[data-asset]").forEach(img => {
-        const k = img.getAttribute("data-asset");
-        if(k && ASSETS[k]) img.src = asset(k);
-      });
+      heroImg.src = shotUrl("prayer");
+      document.querySelectorAll(".screen[data-shotid] img").forEach(img => { const shotId = img.closest(".screen")?.getAttribute("data-shotid"); if(shotId) img.src = shotUrlForScreen(shotId); });
     }
     mqDark.addEventListener("change", applyThemeAssets);
 
-    // ==========================================================
-    // 7) PARALLAX
-    // ==========================================================
     function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-    function onScrollParallax(){
-      const hero = document.getElementById("hero");
-      const media = document.getElementById("heroMedia");
-      if(!hero || !media) return;
-      const rect = hero.getBoundingClientRect();
-      const progress = clamp((-rect.top) / rect.height, 0, 1);
-      const y = Math.round(progress * 52);
-      media.style.setProperty("--pY", `${y * -1}px`);
-    }
+    function onScrollParallax(){ const hero = document.getElementById("hero"); const media = document.getElementById("heroMedia"); if(!hero || !media) return; const rect = hero.getBoundingClientRect(); const progress = clamp((-rect.top) / rect.height, 0, 1); const y = Math.round(progress * 52); media.style.setProperty("--pY", `${y * -1}px`); }
 
-    // ==========================================================
-    // 8) LANGUAGE TOGGLE
-    // ==========================================================
     function setLang(lang){
       LANG = lang;
       document.getElementById("btn-en").classList.toggle("active", lang==="en");
       document.getElementById("btn-ar").classList.toggle("active", lang==="ar");
+      applyTopCopy();
+      renderStoreRow();
+      renderFeatures();
+      renderChapters();
+      wireReveal();
+      wireAutoFlip();
+      applyThemeAssets();
+      renderHowTo();
+      applySupportLang();
+      CHAPTERS.forEach(ch => activateBullet(ch.key, 0));
+    }
+    function setMode(mode){
+      MODE = mode;
+      const supportBtn = document.getElementById("mode-support");
+      const policyBtn = document.getElementById("mode-policy");
+      if(supportBtn && policyBtn){
+        supportBtn.classList.toggle("active", mode === "support");
+        policyBtn.classList.toggle("active", mode === "policy");
+      }
+      const isAr = LANG === "ar";
+      let targetId;
+      let hash;
+      if(mode === "policy"){
+        targetId = isAr ? "privacy-ar-heading" : "privacy-en-heading";
+        hash = isAr ? "#privacy-ar" : "#privacy-en";
+      }else{
+        targetId = isAr ? "howto-ar-heading" : "howto-en-heading";
+        hash = isAr ? "#support-ar" : "#support-en";
+      }
+      const el = document.getElementById(targetId);
+      if(el) el.scrollIntoView({ behavior:"smooth", block:"start" });
+      if(hash){
+        history.replaceState(null, "", hash);
+      }
+    }
+    document.getElementById("btn-en").addEventListener("click", ()=>setLang("en"));
+    document.getElementById("btn-ar").addEventListener("click", ()=>setLang("ar"));
+    document.getElementById("theme-system").addEventListener("click", ()=>setThemeMode("system"));
+    document.getElementById("theme-light").addEventListener("click", ()=>setThemeMode("light"));
+    document.getElementById("theme-dark").addEventListener("click", ()=>setThemeMode("dark"));
+    document.getElementById("mode-support").addEventListener("click", ()=>setMode("support"));
+    document.getElementById("mode-policy").addEventListener("click", ()=>setMode("policy"));
 
+    function init(){
+      document.getElementById("navAppIcon").innerHTML = NAV_APP_ICON_HTML;
+      renderStoreRow();
       applyTopCopy();
       renderFeatures();
       renderChapters();
-      wireObservers();
-      applyThemeAssets();
-
-      // reset each chapter to first bullet
+      wireReveal();
+      wireAutoFlip();
+      setThemeMode(THEME_MODE);
+      renderHowTo();
+      applySupportLang();
       CHAPTERS.forEach(ch => activateBullet(ch.key, 0));
+      onScrollParallax();
+      window.addEventListener("scroll", onScrollParallax, { passive:true });
     }
-
-    document.getElementById("btn-en").addEventListener("click", ()=>setLang("en"));
-    document.getElementById("btn-ar").addEventListener("click", ()=>setLang("ar"));
-
-    // ==========================================================
-    // INIT
-    // ==========================================================
-    applyTopCopy();
-    renderFeatures();
-    renderChapters();
-    wireObservers();
-    applyThemeAssets();
-
-    CHAPTERS.forEach(ch => activateBullet(ch.key, 0));
-    onScrollParallax();
-    window.addEventListener("scroll", onScrollParallax, { passive:true });
+    init();
   </script>
 </body>
 </html>
