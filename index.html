@@ -90,10 +90,14 @@
     .btn.primary{ background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; border-color: rgba(255,255,255,.18); box-shadow: 0 14px 28px rgba(0,113,227,.22); }
 
     @media (max-width: 734px){
-      .nav-inner{ align-items:flex-start; }
-      .nav-actions{ flex-direction:column; align-items:flex-end; gap:6px; }
-      .seg{ font-size:12px; }
-      .seg button{ padding:6px 10px; font-size:12px; }
+      .nav .container{ padding-left: 14px; padding-right: 14px; }
+      .nav-inner{ align-items: center; gap: 8px; }
+      .brand{ min-width: 0; flex-shrink: 1; }
+      .brand h1{ font-size: 12px; }
+      .brand p{ font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 110px; }
+      .nav-actions{ flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+      .seg{ flex-wrap: wrap; justify-content: flex-end; font-size: 11px; }
+      .seg button{ padding: 5px 7px; font-size: 11px; }
     }
 
     .hero{ position:relative; height: clamp(640px, 92vh, 980px); overflow:hidden; border-bottom: 1px solid var(--border); background: var(--bg); }
@@ -273,7 +277,7 @@
     <section class="support-root">
       <div class="container">
         <div id="supportEn" class="support-grid">
-          <header class="support-header">
+          <header id="support-en" class="support-header">
             <h2>Support</h2>
             <p>Need help, have feedback, or a question about AlAthan? We’re here for you.</p>
             <div class="support-contact">
@@ -288,7 +292,7 @@
             <div id="howToListEn" class="howto-list"></div>
           </section>
 
-          <section class="support-card" aria-labelledby="privacy-en-heading">
+          <section id="privacy-en" class="support-card" aria-labelledby="privacy-en-heading">
             <h2 id="privacy-en-heading">Privacy Policy</h2>
             <p>AlAthan (“the App”) provides prayer times, Qibla direction, and related features. This policy describes how we handle information.</p>
             <div class="policy-block">
@@ -323,7 +327,7 @@
         </div>
 
         <div id="supportAr" class="support-grid" style="display:none;">
-          <header class="support-header">
+          <header id="support-ar" class="support-header">
             <h2>الدعم</h2>
             <p>تحتاج مساعدة أو لديك ملاحظات أو سؤال عن الأذان؟ نحن هنا من أجلك.</p>
             <div class="support-contact">
@@ -338,7 +342,7 @@
             <div id="howToListAr" class="howto-list"></div>
           </section>
 
-          <section class="support-card" aria-labelledby="privacy-ar-heading">
+          <section id="privacy-ar" class="support-card" aria-labelledby="privacy-ar-heading">
             <h2 id="privacy-ar-heading">سياسة الخصوصية</h2>
             <p>تطبيق الأذان يوفّر أوقات الصلاة واتجاه القبلة والميزات المرتبطة. هذه السياسة تصف كيفية تعاملنا مع المعلومات.</p>
             <div class="policy-block">
@@ -721,38 +725,30 @@
       applySupportLang();
       CHAPTERS.forEach(ch => activateBullet(ch.key, 0));
     }
-  function setMode(mode){
-  MODE = mode;
-
-  const supportBtn = document.getElementById("mode-support");
-  const policyBtn  = document.getElementById("mode-policy");
-  if (supportBtn && policyBtn){
-    supportBtn.classList.toggle("active", mode === "support");
-    policyBtn.classList.toggle("active", mode === "policy");
-  }
-
-  const isAr = LANG === "ar";
-  let targetId, hash;
-
-  if (mode === "policy"){
-    targetId = isAr ? "privacy-ar-heading" : "privacy-en-heading";
-    hash     = isAr ? "#privacy-ar"        : "#privacy-en";
-  } else {
-    targetId = isAr ? "howto-ar-heading"   : "howto-en-heading";
-    hash     = isAr ? "#support-ar"        : "#support-en";
-  }
-
-  // Smooth scroll
-  const el = document.getElementById(targetId);
-if(el) el.scrollIntoView({ behavior:"smooth", block:"start" });
-
-if (hash){
-  const url = new URL(window.location.href);
-  url.searchParams.set("ref", mode); // "support" or "policy"
-  url.hash = hash;
-  history.replaceState(null, "", url.pathname + url.search + url.hash);
-}
-}
+    function setMode(mode){
+      MODE = mode;
+      const supportBtn = document.getElementById("mode-support");
+      const policyBtn = document.getElementById("mode-policy");
+      if(supportBtn && policyBtn){
+        supportBtn.classList.toggle("active", mode === "support");
+        policyBtn.classList.toggle("active", mode === "policy");
+      }
+      const isAr = LANG === "ar";
+      let targetId;
+      let hash;
+      if(mode === "policy"){
+        targetId = isAr ? "privacy-ar-heading" : "privacy-en-heading";
+        hash = isAr ? "#privacy-ar" : "#privacy-en";
+      }else{
+        targetId = isAr ? "howto-ar-heading" : "howto-en-heading";
+        hash = isAr ? "#support-ar" : "#support-en";
+      }
+      const el = document.getElementById(targetId);
+      if(el) el.scrollIntoView({ behavior:"smooth", block:"start" });
+      if(hash){
+        history.replaceState(null, "", hash);
+      }
+    }
     document.getElementById("btn-en").addEventListener("click", ()=>setLang("en"));
     document.getElementById("btn-ar").addEventListener("click", ()=>setLang("ar"));
     document.getElementById("theme-system").addEventListener("click", ()=>setThemeMode("system"));
@@ -760,6 +756,57 @@ if (hash){
     document.getElementById("theme-dark").addEventListener("click", ()=>setThemeMode("dark"));
     document.getElementById("mode-support").addEventListener("click", ()=>setMode("support"));
     document.getElementById("mode-policy").addEventListener("click", ()=>setMode("policy"));
+
+    function applyHashFromUrl(){
+      const raw = (window.location.hash || "").trim().toLowerCase();
+      const hash = raw.startsWith("#") ? raw.slice(1) : raw;
+      if(!hash) return;
+      const map = {
+        "ar": { lang: "ar", mode: null, targetId: null },
+        "en": { lang: "en", mode: null, targetId: null },
+        "privacy-ar": { lang: "ar", mode: "policy", targetId: "privacy-ar" },
+        "privacy-en": { lang: "en", mode: "policy", targetId: "privacy-en" },
+        "support-ar": { lang: "ar", mode: "support", targetId: "support-ar" },
+        "support-en": { lang: "en", mode: "support", targetId: "support-en" }
+      };
+      const cfg = map[hash];
+      if(!cfg) return;
+      if(LANG !== cfg.lang){
+        LANG = cfg.lang;
+        document.getElementById("btn-en").classList.toggle("active", LANG === "en");
+        document.getElementById("btn-ar").classList.toggle("active", LANG === "ar");
+        applyTopCopy();
+        renderStoreRow();
+        renderFeatures();
+        renderChapters();
+        wireReveal();
+        wireAutoFlip();
+        applyThemeAssets();
+        renderHowTo();
+        applySupportLang();
+        CHAPTERS.forEach(ch => activateBullet(ch.key, 0));
+      } else {
+        applySupportLang();
+      }
+      if(cfg.mode){
+        MODE = cfg.mode;
+        const supportBtn = document.getElementById("mode-support");
+        const policyBtn = document.getElementById("mode-policy");
+        if(supportBtn && policyBtn){
+          supportBtn.classList.toggle("active", MODE === "support");
+          policyBtn.classList.toggle("active", MODE === "policy");
+        }
+      }
+      if(cfg.targetId){
+        const el = document.getElementById(cfg.targetId);
+        if(el){
+          requestAnimationFrame(() => {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        }
+      }
+    }
+    window.addEventListener("hashchange", applyHashFromUrl);
 
     function init(){
       document.getElementById("navAppIcon").innerHTML = NAV_APP_ICON_HTML;
@@ -775,6 +822,7 @@ if (hash){
       CHAPTERS.forEach(ch => activateBullet(ch.key, 0));
       onScrollParallax();
       window.addEventListener("scroll", onScrollParallax, { passive:true });
+      applyHashFromUrl();
     }
     init();
   </script>
