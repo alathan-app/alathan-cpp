@@ -64,12 +64,12 @@
     }
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
-    body{ margin:0; padding-top: var(--navH); font-family: var(--ui); color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; line-height: 1.45; overflow-x:hidden; }
+    body{ margin:0; padding-top: calc(var(--navH) + env(safe-area-inset-top, 0px)); font-family: var(--ui); color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; line-height: 1.45; overflow-x:hidden; }
     a{ color: var(--accent); text-decoration:none; }
     a:hover{ text-decoration:underline; }
     .container{ width:min(var(--max), 100%); margin:0 auto; padding:0 32px; box-sizing: border-box; }
 
-    .nav{ position:fixed; inset-block-start:0; inset-inline:0; z-index:60; height:var(--navH); display:flex; align-items:center; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); background: color-mix(in oklab, var(--bg) 82%, transparent); border-bottom: 1px solid var(--border); }
+    .nav{ position:fixed; top: env(safe-area-inset-top, 0px); left:0; right:0; z-index:60; height:var(--navH); display:flex; align-items:center; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); background: color-mix(in oklab, var(--bg) 82%, transparent); border-bottom: 1px solid var(--border); }
     @supports not (color-mix(in oklab, red, blue)) { .nav { background: rgba(251,251,253,.82); } @media (prefers-color-scheme: dark){ .nav { background: rgba(0,0,0,.72); } } }
     .nav-inner{ display:flex; align-items:center; justify-content:space-between; gap:14px; width:100%; }
     .brand{ display:flex; align-items:center; gap:12px; min-width:220px; }
@@ -88,6 +88,13 @@
     .btn{ border:1px solid var(--border); background: var(--surface-2); color: var(--text); padding:9px 12px; border-radius:999px; font-size:13px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none; transition: transform .15s ease, background .2s ease, border-color .2s ease; white-space:nowrap; }
     .btn:hover{ transform: translateY(-1px); }
     .btn.primary{ background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; border-color: rgba(255,255,255,.18); box-shadow: 0 14px 28px rgba(0,113,227,.22); }
+
+    @media (max-width: 734px){
+      .nav-inner{ align-items:flex-start; }
+      .nav-actions{ flex-direction:column; align-items:flex-end; gap:6px; }
+      .seg{ font-size:12px; }
+      .seg button{ padding:6px 10px; font-size:12px; }
+    }
 
     .hero{ position:relative; height: clamp(640px, 92vh, 980px); overflow:hidden; border-bottom: 1px solid var(--border); background: var(--bg); }
     .hero-media{ position:absolute; inset:0; pointer-events:none; }
@@ -116,12 +123,15 @@
     .chapter-inner{ width:100%; display:grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items:start; }
     @media (max-width: 980px){
       .chapter{ min-height:auto; padding: 72px 0; }
-      .chapter-inner{ grid-template-columns: 1fr; gap: 28px; }
-      .chapter-inner > .mock-wrap{ order:1; }
-      .chapter-inner > .reveal{ order:2; }
+      .chapter-inner{ grid-template-columns: 1fr; gap: 24px; }
+      .chapter-inner > .mock-wrap{ display:none; }
+      .chapter-inner > .reveal{ order:1; }
     }
 
     .mock-wrap{ position: sticky; top: calc(var(--navH) + 18px); height: calc(100vh - var(--navH) - 36px); display:flex; align-items:center; justify-content:center; }
+    @media (max-width: 980px){
+      .mock-wrap{ top: calc(var(--navH) + 12px); height:auto; }
+    }
     .phone-stage{ width: var(--phoneW); height: var(--phoneH); position: relative; transform: translateZ(0); filter: drop-shadow(0 26px 70px rgba(0,0,0,.16)); }
     .screen-stack{ position:absolute; inset:0; border-radius: 38px; overflow:hidden; border: 1px solid var(--border); background: linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.35)); }
     @media (prefers-color-scheme: dark){ .screen-stack{ background: linear-gradient(180deg, rgba(28,28,30,.78), rgba(28,28,30,.42)); } }
@@ -144,6 +154,25 @@
     .bullet.active{ border-color: rgba(0,113,227,.45); background: rgba(0,113,227,.08); }
     .bullet .t{ margin:0 0 4px; font-weight:650; letter-spacing:-.01em; font-size:14px; }
     .bullet .h{ margin:0; color:var(--muted); font-size:13px; line-height:1.3; }
+    .bullet-shot{ display:none; margin-top:10px; border-radius:18px; overflow:hidden; border:1px solid var(--border); background:#000; }
+    .bullet-shot img{ width:100%; height:auto; display:block; object-fit:contain; }
+
+    @media (max-width: 734px){
+      .bullet{ padding:14px 14px; }
+      .bullet .t{ font-size:15px; }
+      .bullet .h{ font-size:13px; }
+      .bullet-shot{ display:block; max-width: 320px; margin-left:auto; margin-right:auto; }
+    }
+
+    @media (max-width: 734px){
+      .store-row{ flex-direction:row; align-items:center; gap:10px; }
+      .store-row .app-icon-wrap{ width:56px; height:56px; min-width:56px; }
+      .store-row img[alt="Download on the App Store"]{ width:170px !important; height:auto !important; }
+    }
+
+    @media (max-width: 980px){
+      .bullet-shot{ display:block; }
+    }
 
     .reveal{ opacity:0; transform: translateY(16px); transition: opacity .7s ease, transform .7s ease; will-change: opacity, transform; }
     .reveal.in{ opacity:1; transform: translateY(0); }
@@ -198,12 +227,10 @@
           <button id="mode-support" class="active" role="tab" aria-selected="true" type="button">Support</button>
           <button id="mode-policy" role="tab" aria-selected="false" type="button">Policy</button>
         </div>
-        <div class="seg" role="tablist" aria-label="Theme">
+        <div class="seg" role="tablist" aria-label="Theme and language">
           <button id="theme-system" class="active" role="tab" aria-selected="true" type="button">System</button>
           <button id="theme-light" role="tab" aria-selected="false" type="button">Light</button>
           <button id="theme-dark" role="tab" aria-selected="false" type="button">Dark</button>
-        </div>
-        <div class="seg" role="tablist" aria-label="Language">
           <button id="btn-en" class="active" role="tab" aria-selected="true" type="button">EN</button>
           <button id="btn-ar" role="tab" aria-selected="false" type="button">عربي</button>
         </div>
@@ -633,7 +660,7 @@
       host.innerHTML = "";
       CHAPTERS.forEach((ch) => {
         const c = ch[LANG];
-        const bulletsHtml = c.bullets.map((b,i)=>`<div class="bullet ${i===0 ? "active":""}" data-chapter="${ch.key}" data-bullet="${i}"><p class="t">${esc(b.t)}</p><p class="h">${esc(b.h)}</p></div>`).join("");
+        const bulletsHtml = c.bullets.map((b,i)=>`<div class="bullet ${i===0 ? "active":""}" data-chapter="${ch.key}" data-bullet="${i}"><p class="t">${esc(b.t)}</p><p class="h">${esc(b.h)}</p><div class="bullet-shot"><img src="${esc(shotUrlForScreen(b.shotId))}" data-fallback="${esc(shotUrlForScreenFallback(b.shotId))}" alt="" loading="lazy" onerror="var f=this.getAttribute('data-fallback');if(f){this.onerror=null;this.src=f;}" /></div></div>`).join("");
         const screensHtml = c.bullets.map((b,i)=>`<div class="screen ${i===0 ? "active":""}" data-bullet="${i}" data-shotid="${esc(b.shotId)}"><img data-shotid="${esc(b.shotId)}" src="${esc(shotUrlForScreen(b.shotId))}" data-fallback="${esc(shotUrlForScreenFallback(b.shotId))}" alt="" loading="eager" onerror="var f=this.getAttribute('data-fallback');if(f){this.onerror=null;this.src=f;}" /></div>`).join("");
         const section = document.createElement("section");
         section.className = "chapter"; section.id = "chapter-" + ch.key;
