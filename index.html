@@ -744,14 +744,14 @@
 
   // Smooth scroll
   const el = document.getElementById(targetId);
-  if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
+if(el) el.scrollIntoView({ behavior:"smooth", block:"start" });
 
-  // ✅ Preserve existing URL + query params, only update hash
-  if (hash){
-    const url = new URL(window.location.href);
-    url.hash = hash; // keeps ?query=... intact
-    history.replaceState(null, "", url.toString());
-  }
+if (hash){
+  const url = new URL(window.location.href);
+  url.searchParams.set("ref", mode); // "support" or "policy"
+  url.hash = hash;
+  history.replaceState(null, "", url.pathname + url.search + url.hash);
+}
 }
     document.getElementById("btn-en").addEventListener("click", ()=>setLang("en"));
     document.getElementById("btn-ar").addEventListener("click", ()=>setLang("ar"));
